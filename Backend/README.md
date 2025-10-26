@@ -110,6 +110,7 @@ Authenticate an existing user.
 ##### Success Response
 - Status Code: `200 OK`
 - Description: User successfully logged in
+- Sets HTTP-only cookie with JWT token
 
 Example Response:
 ```json
@@ -126,6 +127,8 @@ Example Response:
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 }
 ```
+
+Note: The token is both returned in the response and set as an HTTP-only cookie named 'token'
 
 ##### Error Responses
 
@@ -158,6 +161,96 @@ Example Response:
       "location": "body"
     }
   ]
+}
+```
+
+### 3. GET /users/profile
+
+Retrieve the authenticated user's profile information.
+
+#### Request
+
+- Method: `GET`
+- URL: `/users/profile`
+- Headers:
+  - `Authorization`: Bearer {token}
+  - Or uses Cookie: `token`
+
+#### Authentication
+
+This endpoint requires authentication. The JWT token must be provided either:
+- In the Authorization header as a Bearer token
+- In the cookies as 'token'
+
+#### Responses
+
+##### Success Response
+- Status Code: `200 OK`
+- Description: User profile retrieved successfully
+
+Example Response:
+```json
+{
+  "fullname": {
+    "firstname": "John",
+    "lastname": "Doe"
+  },
+  "email": "john.doe@example.com",
+  "socketId": null,
+  "_id": "5f9d88b3b2b7c91234567890"
+}
+```
+
+##### Error Response
+- Status Code: `401 Unauthorized`
+- Description: Invalid or missing authentication token
+
+Example Response:
+```json
+{
+  "message": "Unauthorized user"
+}
+```
+
+### 4. GET /users/logout
+
+Log out the currently authenticated user and invalidate their token.
+
+#### Request
+
+- Method: `GET`
+- URL: `/users/logout`
+- Headers:
+  - `Authorization`: Bearer {token}
+  - Or uses Cookie: `token`
+
+#### Authentication
+
+This endpoint requires authentication. The JWT token must be provided either:
+- In the Authorization header as a Bearer token
+- In the cookies as 'token'
+
+#### Responses
+
+##### Success Response
+- Status Code: `200 OK`
+- Description: User successfully logged out
+
+Example Response:
+```json
+{
+  "message": "Logged out successfully"
+}
+```
+
+##### Error Response
+- Status Code: `401 Unauthorized`
+- Description: Invalid or missing authentication token
+
+Example Response:
+```json
+{
+  "message": "Unauthorized user"
 }
 ```
 
