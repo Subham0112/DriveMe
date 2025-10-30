@@ -1,0 +1,5 @@
+.home-page {
+  background-image: url('./assets/img/main-image.jpg');
+  background-size: cover;
+  background-position: center;
+}

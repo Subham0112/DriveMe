@@ -1,4 +1,4 @@
-const User = require("../Models/user.model");
+const User = require("../models/user.model");
 
 const createUser = async ({ firstname, lastname, email, password }) => {
   if (!firstname || !lastname || !email || !password) {
