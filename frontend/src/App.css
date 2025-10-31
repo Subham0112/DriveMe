@@ -2,4 +2,27 @@
   background-image: url('./assets/img/main-image.jpg');
   background-size: cover;
   background-position: center;
+ 
 }
+
+
+@media (max-width: 768px) {
+  .hidden-800\+ {
+    display: flex !important;
+  }
+  .visible-800\+ {
+    display: none !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .hidden-800\+ {
+    display: none !important;
+  }
+  .visible-800\+ {
+    display: flex !important;
+  }
+}
+
+
+/* login page */

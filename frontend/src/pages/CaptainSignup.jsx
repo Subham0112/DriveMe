@@ -30,14 +30,30 @@ const CaptainSignup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 py-6 flex flex-col justify-center sm:py-12">
-      <div className="relative py-3 sm:max-w-xl sm:mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 py-3 flex flex-col justify-center sm:py-10">
+
+      
+          <div className="absolute top-4 left-4">
+            <Link
+              to="/"
+              className="flex items-center text-orange-700 hover:text-orange-900"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              <span className="ml-2">Home</span>
+            </Link>
+          </div>
+
+
+
+      <div className="relative py-3 w-[100%] sm:max-w-xl sm:mx-auto md:w-[500px] lg:w-[550px] mx-auto">
         <div className="absolute inset-0 bg-gradient-to-r from-orange-300 to-orange-500 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl"></div>
-        <div className="relative px-4 py-10 bg-white shadow-lg sm:rounded-3xl sm:p-20">
+        <div className="relative px-4 py-7 bg-white shadow-lg sm:rounded-3xl sm:p-10">
           <div className="max-w-md mx-auto">
             <div className="divide-y divide-gray-200">
-              <div className="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
-                <h2 className="text-3xl font-bold text-center mb-8 ">Become a <span className='text-orange-500'>Captain</span></h2> 
+              <div className="py-3 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
+                <h2 className="text-3xl font-bold text-center mb-8 ">Become a <span className='text-orange-500'>Rider</span></h2> 
                 <form onSubmit={handleSubmit} className="space-y-6">
                   {/* Personal Information */}
                   <div className="space-y-6">
@@ -158,7 +174,7 @@ const CaptainSignup = () => {
                       type="submit"
                       className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-400 hover:bg-orange-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-300"
                     >
-                      Sign up as Captain
+                      Sign up as Rider
                     </button>
                   </div>
                 </form>
