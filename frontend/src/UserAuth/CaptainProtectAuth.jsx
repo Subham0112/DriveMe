@@ -1,7 +1,6 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom';
 import { useContext, useEffect } from 'react';
-import { UserDataContext } from '../context/UserContext.jsx';
 
 const CaptainProtectAuth = ({children}) => {
   const token = localStorage.getItem('captainToken');
