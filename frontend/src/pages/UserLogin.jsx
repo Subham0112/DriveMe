@@ -1,24 +1,32 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import driveMeLogo from '../assets/img/DriveMe-Logo.png'
+import { UserDataContext } from '../context/UserContext.jsx';
+import axios from 'axios';
 
 function UserLogin() {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const navigate=useNavigate();
+  const {user, setUser}=useContext(UserDataContext);
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log('Login data:', formData.email, formData.password);
+    const userData = {
+      email: email,
+      password: password
+    };
+
+    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/login`, userData);
+    if(response.status===200){
+      console.log(response.data);
+      console.log("Successful Login");
+      setUser(response.data.user);
+      localStorage.setItem('userToken', response.data.token);
+      navigate('/main');
+    }else{
+      console.log("Login Failed");
+    }
   };
 
   return (
@@ -52,8 +60,8 @@ function UserLogin() {
               type="email"
               name="email"
               id="email"
-              value={formData.email}
-              onChange={handleChange}
+              value={email}
+              onChange={(e)=>setEmail(e.target.value)}
               className="peer h-10 w-full border-b-2 border-gray-300 text-gray-900 placeholder-transparent focus:outline-none focus:border-cyan-400"
               placeholder="Email address"
             />
@@ -69,8 +77,8 @@ function UserLogin() {
               type="password"
               name="password"
               id="password"
-              value={formData.password}
-              onChange={handleChange}
+              value={password}
+              onChange={(e)=>setPassword(e.target.value)}
               className="peer h-10 w-full border-b-2 border-gray-300 text-gray-900 placeholder-transparent focus:outline-none focus:border-cyan-400"
               placeholder="Password"
             />

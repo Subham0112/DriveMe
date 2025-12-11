@@ -16,21 +16,15 @@ const registerCaptain = async (req, res) => {
   }
 
   const hashedPassword = await Captain.hashPassword(password);
-  const captain = await captainService.createCaptain({
-    firstname: fullname.firstname,
-    lastname: fullname.lastname,
-    email, 
-    password: hashedPassword,
-    phone,
-    color:vehicle.color,
-    plate:vehicle.plate,
-    capacity:vehicle.capacity,
-    vehicleType:vehicle.vehicleType
-
-
-  })
-
-
+   // Create captain - pass vehicle as object
+    const captain = await captainService.createCaptain({
+      firstname: fullname.firstname,
+      lastname: fullname.lastname,
+      email, 
+      password: hashedPassword,
+      phone,
+      vehicle: vehicle  
+    });
   res.status(201).json({ captain});
   console.log("captain created");
 

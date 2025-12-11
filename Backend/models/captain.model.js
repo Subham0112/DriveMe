@@ -21,10 +21,10 @@ const captainSchema = new Schema({
     required: true,
     lowercase: true,
     unique: true,
-    match: [
-      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-      'Please enter a valid email address',
-    ],
+    // match: [
+    //   /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+    //   'Please enter a valid email address',
+    // ],
   },
   password: {
     type: String,
@@ -35,7 +35,7 @@ const captainSchema = new Schema({
     type: String,
     required: true,
     unique: true,
-    minlength: [10, 'phone number must be at least 10 characters long'],
+    // minlength: [10, 'phone number must be at least 10 characters long'],
   },
 
   socketId: {

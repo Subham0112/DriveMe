@@ -1,9 +1,9 @@
 import React from 'react'
 
 
-export const UserContext = React.createContext()
+export const UserDataContext = React.createContext()
 
-const userContext = ({ children }) => {
+const UserContext = ({ children }) => {
 
   const [user, setUser] = React.useState({
 
@@ -17,12 +17,12 @@ const userContext = ({ children }) => {
   )
 
   return (
-    <UserContext.Provider value={[user, setUser ]}>
+    <UserDataContext.Provider value={{user, setUser }}>
     <div>
      {children}
     </div>
-    </UserContext.Provider>
+    </UserDataContext.Provider>
   )
 }
 
-export default userContext
+export default UserContext;

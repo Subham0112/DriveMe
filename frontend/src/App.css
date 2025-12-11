@@ -4,6 +4,9 @@
   background-position: center;
  
 }
+input{
+  font-size:14px;
+}
 
 
 @media (max-width: 768px) {
