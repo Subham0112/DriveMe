@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 // import { CaptainDataContext } from '../context/CaptainContext';
 import axios from 'axios';
 
@@ -16,7 +16,7 @@ const CaptainSignup = () => {
     capacity: '',
     vehicleType: 'car'
   });
-
+const navigate = useNavigate();
   // const {captain, setCaptain} = useContext(CaptainDataContext);
 
   const handleNext = (e) => {

@@ -49,7 +49,11 @@ const loginUser = async (req, res, next) => {
     return res.status(401).json({ errors: [{ msg: 'Invalid email or password' }] });
   }
   const token = user.generateAuthToken();
-   res.cookie('token', token);
+   res.cookie('token', token, {
+  httpOnly: true,
+  secure: false,      // true in production (HTTPS)
+  sameSite: 'lax'
+});
 
   res.status(200).json({ user, token });
   console.log("user logged in");
@@ -60,13 +64,29 @@ const getUserProfile = async (req, res, next) => {
   res.status(200).json(req.user)
 };
 
-const logoutUser = async (req, res, next) => {
-  const token=req.cookies?.token || req.headers.authorization?.split(" ")[1];
-  await blacklistToken.create({token});
-  res.clearCookie('token');
+const logoutUser = async (req, res) => {
+  try {
+    const token =
+      req.cookies?.token ||
+      req.headers.authorization?.split(" ")[1];
 
-  res.status(200).json({ message: 'Logged out successfully' });
+    if (token) {
+      await blacklistToken.findOneAndUpdate(
+        { token },
+        { token },
+        { upsert: true, new: true }
+      );
+    }
+
+    res.clearCookie("token");
+    return res.status(200).json({ message: "user Logged out successfully" });
+
+  } catch (err) {
+    console.error("Logout error:", err);
+    return res.status(500).json({ message: "Logout failed" });
+  }
 };
+
 
 module.exports = {
   registerUser,

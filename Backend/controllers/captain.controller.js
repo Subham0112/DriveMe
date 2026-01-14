@@ -49,7 +49,11 @@ const loginCaptain = async (req, res, next) => {
     return res.status(401).json({ errors: [{ msg: 'Invalid email or password' }] });
   }
   const token = captain.generateAuthToken();
-   res.cookie('token', token);
+   res.cookie('token', token, {
+  httpOnly: true,
+  secure: false,      // true in production (HTTPS)
+  sameSite: 'lax'
+   });
   res.status(200).json({ captain, token });
   console.log("captain logged in");
 }
@@ -57,13 +61,29 @@ const loginCaptain = async (req, res, next) => {
 const getCaptainProfile = async (req, res, next) => {
   res.status(200).json(req.captain)
 }
-const logoutCaptain = async (req, res, next) => {
-  const token=req.cookies?.token || req.headers.authorization?.split(" ")[1];
-  await blacklistToken.create({token});
-  res.clearCookie('token');
-  res.status(200).json({ message: 'Logged out successfully' });
+const logoutCaptain= async (req, res) => {
+  try {
+    const token =
+      req.cookies?.token ||
+      req.headers.authorization?.split(" ")[1];
 
-}
+    if (token) {
+      await blacklistToken.findOneAndUpdate(
+        { token },
+        { token },
+        { upsert: true, new: true }
+      );
+    }
+
+    res.clearCookie("token");
+    return res.status(200).json({ message: "captain Logged out successfully" });
+
+  } catch (err) {
+    console.error("Logout error:", err);
+    return res.status(500).json({ message: "Logout failed" });
+  }
+};
+
 
 
 

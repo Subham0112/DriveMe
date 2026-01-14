@@ -1,28 +1,26 @@
-import React from 'react'
-import { useNavigate } from 'react-router-dom';
-import { useContext, useEffect } from 'react';
-import { UserDataContext } from '../context/UserContext.jsx';
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
-const UserProtectAuth = ({children}) => {
-  const token = localStorage.getItem('userToken');
+const UserProtectAuth = ({ children }) => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if(!token) {
-      navigate('/login');
-    }
-  }, [token, navigate]);
+    axios.get(`${import.meta.env.VITE_BASE_URL}/users/profile`, {
+      withCredentials: true
+    })
+    .then(() => {
+      setLoading(false); // authenticated
+    })
+    .catch(() => {
+      navigate("/login"); // not authenticated
+    });
+  }, []);
 
-  // Don't render children if there's no token
-  if(!token) {
-    return null;
-  }
+  if (loading) return null;
 
-  return (
-    <>
-      {children}
-    </>
-  )
-}
+  return children;
+};
 
-export default UserProtectAuth
+export default UserProtectAuth;

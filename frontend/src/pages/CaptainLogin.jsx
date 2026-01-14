@@ -1,11 +1,14 @@
 import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CaptainDataContext } from '../context/CaptainContext';
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+
 import axios from 'axios';
 
 const CaptainLogin = () => {
 const [email, setEmail] = useState('');
 const [password, setPassword] = useState('');
+const [showPassword, setShowPassword] = useState(false);
 
 const navigate=useNavigate();
 const {captain, setCaptain}=useContext(CaptainDataContext);
@@ -17,12 +20,13 @@ const {captain, setCaptain}=useContext(CaptainDataContext);
       password: password,
     };
 
-    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/captains/login`, captainData);
+    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/captains/login`, captainData,{
+      withCredentials: true
+    });
     if(response.status===200){
       console.log(response.data);
       console.log("Successful Login");
       setCaptain(response.data.captain);
-      localStorage.setItem('captainToken', response.data.token);
       navigate('/captainmain');
     } else{
       console.log("Login Failed");
@@ -72,23 +76,37 @@ const {captain, setCaptain}=useContext(CaptainDataContext);
                 Email address
               </label>
             </div>
-            <div className="relative">
-              <input
-                type="password"
-                name="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="peer h-10 w-full border-b-2 border-gray-300 text-gray-900 placeholder-transparent focus:outline-none focus:border-orange-400"
-                placeholder="Password"
-              />
-              <label
-                htmlFor="password"
-                className="absolute left-0 -top-3.5 text-gray-600 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-2 peer-focus:-top-3.5 peer-focus:text-gray-600 peer-focus:text-sm"
-              >
-                Password
-              </label>
-            </div>
+           <div className="relative">
+  <input
+    type={showPassword ? "text" : "password"}
+    name="password"
+    id="password"
+    value={password}
+    onChange={(e) => setPassword(e.target.value)}
+    className="peer h-10 w-full border-b-2 border-gray-300 text-gray-900 placeholder-transparent focus:outline-none focus:border-orange-400 pr-10"
+    placeholder="Password"
+  />
+
+  <label
+    htmlFor="password"
+    className="absolute left-0 -top-3.5 text-gray-600 text-sm transition-all
+    peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400
+    peer-placeholder-shown:top-2 peer-focus:-top-3.5
+    peer-focus:text-gray-600 peer-focus:text-sm"
+  >
+    Password
+  </label>
+
+  {/* Eye Icon */}
+  <button
+    type="button"
+    onClick={() => setShowPassword(!showPassword)}
+    className="absolute right-0 top-2.5 text-gray-500 hover:text-orange-600"
+  >
+    {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+  </button>
+</div>
+
   
             <div className="flex items-center justify-end">
               <Link className="text-sm text-orange-500 hover:text-orange-400">
