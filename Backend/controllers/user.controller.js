@@ -49,7 +49,7 @@ const loginUser = async (req, res, next) => {
     return res.status(401).json({ errors: [{ msg: 'Invalid email or password' }] });
   }
   const token = user.generateAuthToken();
-   res.cookie('token', token, {
+ res.cookie('token', token, {
   httpOnly: true,
   secure: false,      // true in production (HTTPS)
   sameSite: 'lax'
