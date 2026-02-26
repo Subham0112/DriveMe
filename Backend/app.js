@@ -3,6 +3,7 @@ dotenv.config();
 const express = require('express');
 const userRoutes = require('./routes/user.routes');
 const captainRoutes = require('./routes/captain.route');
+const rideRoutes = require('./routes/ride.route');
 const cors = require('cors');
 const cookieParser=require('cookie-parser')
 const connectDB = require('./db/db');
@@ -22,6 +23,7 @@ app.use(cookieParser());
 
 app.use('/users', userRoutes);
 app.use('/captains', captainRoutes);
+app.use('/rides', rideRoutes);
 
 app.get('/', (req, res) => {
   res.send('this is ride booking app');

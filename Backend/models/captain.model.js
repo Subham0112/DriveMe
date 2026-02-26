@@ -71,6 +71,11 @@ const captainSchema = new Schema({
     },
 
   },
+  farePerKm:{
+    type: Number,
+    required: true,
+    default: 20
+  },
   location:{
     latitude:{
       type: Number

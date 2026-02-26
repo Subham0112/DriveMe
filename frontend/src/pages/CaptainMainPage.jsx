@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import Navbar from '../components/Navbar';
+import CaptainMap from '../components/captainComponents/CaptainMap';
 import DriveMeLogo from '../assets/img/DriveMe-Logo.png';
 import MapSample from '../assets/img/map_sample.gif';
 import { IoIosArrowDown, IoIosPin } from "react-icons/io";
@@ -49,12 +50,12 @@ const handleRideRequestPanelToggle = () => {
         {/* Logo - only visible on mobile */}
         <img src={DriveMeLogo} alt="DriveMe Logo" className="w-24 h-12 absolute left-5 top-5 md:hidden" />
           <div className='h-screen w-full'>
-                  <img src={MapSample} alt="Map Sample" className="w-full h-full object-cover" />
+            <CaptainMap />
                 </div>
 
-          <div className='flex flex-col justify-end h-screen absolute top-0 w-full md:w-[calc(100vw-16rem)] pb-16 md:pb-0 overflow-auto'>
-                  <div className='px-8 py-4 h-[30%] bg-white flex gap-8 relative z-[2000] w-full md:w-[75%] md:mx-auto md:rounded-t-2xl md:shadow-xl'>
-                 <IoIosArrowDown ref={arrowRef}  className='text-3xl opacity-0 absolute top-2 right-5 text-gray-500 cursor-pointer z-20' />
+          <div className='flex flex-col justify-end h-screen absolute top-0 w-full md:w-[calc(100vw-16rem)] pb-16 md:pb-0 overflow-auto pointer-events-none'>
+                  <div className='px-8 py-4 h-[30%] bg-white pointer-events-auto flex gap-8 relative z-[2000] w-full md:w-[75%] md:mx-auto md:rounded-t-2xl md:shadow-xl'>
+                 
                   {/* Earnings Section - 60% width */}
                   <div className='flex-[1.5]'>
                     <h3 className='text-gray-700 font-semibold text-base mb-3'>Today's Earnings</h3>
@@ -83,7 +84,7 @@ const handleRideRequestPanelToggle = () => {
                   </div>
                   
                   </div>
-                  <div ref={rideReqRef} className='h-[0%] bg-white z-[2000] overflow-auto w-full md:w-[75%] md:mx-auto  md:shadow-xl '>
+                  <div ref={rideReqRef} className='h-[0%] bg-white z-[2000] overflow-auto pointer-events-auto w-full md:w-[75%] md:mx-auto  md:shadow-xl '>
                   <RideRequest />
                   </div>
                 </div>
