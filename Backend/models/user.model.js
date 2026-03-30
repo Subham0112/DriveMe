@@ -29,6 +29,7 @@ const userSchema = new Schema({
   },
   socketId: {
     type: String,
+    default: null,
   },
 });
 

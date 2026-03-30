@@ -64,6 +64,10 @@ const rideSchema = new Schema(
     enum: ['pending', 'paid', 'failed'],
     default: 'pending'
   },
+  rideDate:{
+    type: Date,
+    default: Date.now
+  }
 
 },
 { timestamps: true }

@@ -10,7 +10,10 @@ router.post('/reject', rideController.rejectRide);
 
 router.post('/start', rideController.startRide);
 router.post('/complete', rideController.completeRide);
+router.post('/cancel', rideController.cancelRide);
 
 router.post('/update-location', rideController.updateCaptainLocation);
+router.get('/:rideId', rideController.getRide);
+router.get('/captain-today-stats/:captainId', rideController.getCaptainTodayStats)
 
 module.exports = router;

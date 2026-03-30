@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { MapContainer, TileLayer, Marker, Polyline, Circle } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Polyline, Circle, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { MdMyLocation } from 'react-icons/md'
@@ -14,48 +14,60 @@ L.Icon.Default.mergeOptions({
 
 const defaultCenter = [26.4559, 87.2802] // Biratnagar default
 
+// Small solid dot icon for user's current position (no big accuracy ring)
+const userDotIcon = L.divIcon({
+  className: '',
+  html: `<div style="
+    width: 16px; height: 16px;
+    background: #2563eb;
+    border: 3px solid white;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px #2563eb55;
+  "></div>`,
+  iconSize: [16, 16],
+  iconAnchor: [8, 8],
+})
+
 const UserMap = ({ pickup, destination }) => {
   const [userLocation, setUserLocation] = useState(null)
-  const [accuracy, setAccuracy] = useState(null)
   const [route, setRoute] = useState([])
   const mapRef = useRef(null)
 
-  // 1. Get GPS location
+  // 1. Get GPS location once
   useEffect(() => {
     if (!navigator.geolocation) return
 
-    const watchId = navigator.geolocation.getCurrentPosition(
+    navigator.geolocation.getCurrentPosition(
       (pos) => {
         const loc = [pos.coords.latitude, pos.coords.longitude]
         setUserLocation(loc)
-        setAccuracy(pos.coords.accuracy)
-        
-        // If map is already ready, fly to location immediately
         if (mapRef.current) {
           mapRef.current.flyTo(loc, 17)
         }
       },
       (err) => {
-        console.error("Geo error:", err)
+        console.error('Geo error:', err)
         setUserLocation(defaultCenter)
       },
       { enableHighAccuracy: true, timeout: 10000 }
     )
   }, [])
 
-  // 2. Fix for "Gray Map" or "Small Map" issue
-  // Ensures Leaflet recalculates container size after React renders
+  // 2. Fix gray map
   useEffect(() => {
     if (mapRef.current) {
-      setTimeout(() => {
-        mapRef.current.invalidateSize();
-      }, 400);
+      setTimeout(() => mapRef.current.invalidateSize(), 400)
     }
-  }, []);
+  }, [])
 
-  // 3. Handle Route Fetching & Fitting Bounds
+  // 3. Fetch route when both pickup + destination exist; CLEAR route when either is null
   useEffect(() => {
-    if (!pickup || !destination) return
+    // FIX: When ride completes, UserMainPage sets pickupLocation/destinationLocation to null.
+    // Clearing route here ensures the blue line disappears immediately.
+    if (!pickup || !destination) {
+      setRoute([])
+      return
+    }
 
     const fetchRoute = async () => {
       try {
@@ -66,7 +78,6 @@ const UserMap = ({ pickup, destination }) => {
         if (data.routes && data.routes.length > 0) {
           const coords = data.routes[0].geometry.coordinates.map((c) => [c[1], c[0]])
           setRoute(coords)
-          
           if (mapRef.current) {
             const bounds = L.latLngBounds(coords)
             mapRef.current.fitBounds(bounds, { padding: [50, 50] })
@@ -94,32 +105,25 @@ const UserMap = ({ pickup, destination }) => {
         scrollWheelZoom={true}
         className="w-full h-full"
         style={{ height: '100%', width: '100%' }}
-        ref={mapRef} // Using ref instead of whenCreated
+        ref={mapRef}
       >
-        <TileLayer 
+        <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" 
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
+        {/* FIX: Only a small dot for user location — no large accuracy circle */}
         {userLocation && (
-          <>
-            <Circle
-              center={userLocation}
-              radius={accuracy || 100}
-              pathOptions={{ color: '#2563eb', fillColor: '#3b82f6', fillOpacity: 0.15 }}
-            />
-            {/* Blue dot for user location */}
-            <Circle 
-              center={userLocation} 
-              radius={10} 
-              pathOptions={{ color: 'white', fillColor: '#2563eb', fillOpacity: 1, weight: 2 }} 
-            />
-          </>
+          <Marker position={userLocation} icon={userDotIcon} />
         )}
 
         {pickup && <Marker position={[pickup.lat, pickup.lng]} />}
         {destination && <Marker position={[destination.lat, destination.lng]} />}
-        {route.length > 0 && <Polyline positions={route} color="#2563eb" weight={5} opacity={0.7} />}
+
+        {/* FIX: route is [] when ride ends so this renders nothing */}
+        {route.length > 0 && (
+          <Polyline positions={route} color="#2563eb" weight={5} opacity={0.7} />
+        )}
       </MapContainer>
 
       <button

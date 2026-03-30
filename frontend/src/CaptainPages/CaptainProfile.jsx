@@ -8,11 +8,11 @@ const  CaptainProfile = () => {
       
       <div className='h-screen md:ml-64 pb-16 md:pb-0 overflow-y-auto'>
         <div className="p-6 max-w-2xl mx-auto">
-          <h1 className="text-3xl font-bold mb-6 text-gray-800">Captain Profile</h1>
+          <h1 className="text-3xl font-bold mb-6 text-orange-800">Captain Profile</h1>
           
           <div className="bg-white rounded-lg shadow-md p-6 mb-6">
             <div className="flex items-center mb-6">
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center text-white text-2xl font-bold">
+              <div className="w-20 h-20 rounded-full bg-orange-500 flex items-center justify-center text-white text-2xl font-bold">
                 JS
               </div>
               <div className="ml-4">
@@ -48,7 +48,7 @@ const  CaptainProfile = () => {
               </div>
             </div>
             
-            <button className="w-full mt-6 bg-gradient-to-r from-blue-500 to-indigo-500 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all">
+            <button className="w-full mt-6 bg-orange-500 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all">
               Edit Profile
             </button>
           </div>

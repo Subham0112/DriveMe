@@ -40,6 +40,7 @@ const captainSchema = new Schema({
 
   socketId: {
     type: String,
+    default: null,
   },
   status:{
     type:String,
