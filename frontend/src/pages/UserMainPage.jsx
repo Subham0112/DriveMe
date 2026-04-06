@@ -31,6 +31,8 @@ const UserMainPage = () => {
   const [rideStatus, setRideStatus] = useState(null)
   const [acceptedCaptain, setAcceptedCaptain] = useState(null)
   const [activeRide, setActiveRide] = useState(null)
+  // Live captain location received via socket during active ride
+  const [captainLiveLocation, setCaptainLiveLocation] = useState(null)
 
   const panelRef = useRef(null)
   const arrowRef = useRef(null)
@@ -106,15 +108,21 @@ const UserMainPage = () => {
         setRideStatus('cancelled')
         setAcceptedCaptain(null)
         setActiveRide(null)
+        setCaptainLiveLocation(null)
         if (activeRidePanelRef.current) {
           gsap.to(activeRidePanelRef.current, { duration: 0.4, height: 0, ease: 'power2.out' })
         }
+      })
+
+      socket.on('captain-location-update', ({ lat, lng }) => {
+        setCaptainLiveLocation({ lat, lng })
       })
 
       socket.on('ride-completed', () => {
         setRideStatus(null)
         setAcceptedCaptain(null)
         setActiveRide(null)
+        setCaptainLiveLocation(null)
         setLocation('')
         setDestination('')
         setPickupLocation(null)
@@ -130,6 +138,7 @@ const UserMainPage = () => {
       socket.off('ride-rejected')
       socket.off('ride-cancelled')
       socket.off('ride-completed')
+      socket.off('captain-location-update')
     }
   }, [])
 
@@ -253,6 +262,7 @@ const UserMainPage = () => {
     setActiveRide(null)
     setAcceptedCaptain(null)
     setRideStatus(null)
+    setCaptainLiveLocation(null)
     setLocation('')
     setDestination('')
     setPickupLocation(null)
@@ -282,7 +292,11 @@ const UserMainPage = () => {
       <div className='h-screen w-screen md:ml-64'>
         <img src={DriveMeLogo} alt="DriveMe Logo" className="w-24 h-12 absolute left-5 top-5 md:hidden z-10" />
         <div className='h-screen w-full'>
-          <UserMap pickup={pickupLocation} destination={destinationLocation} />
+          <UserMap
+            pickup={pickupLocation}
+            destination={destinationLocation}
+            captainLocation={captainLiveLocation}
+          />
         </div>
 
         {/* Waiting banner */}
@@ -419,6 +433,7 @@ const UserMainPage = () => {
                 ride={activeRide}
                 captain={acceptedCaptain}
                 onRideCancelled={handleRideCancelled}
+                onRideCompleted={handleRideCancelled}
               />
             )}
           </div>

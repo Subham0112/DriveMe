@@ -5,7 +5,7 @@ import { UserDataContext } from '../context/UserContext.jsx';
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import axios from 'axios';
 
-function UserLogin() {
+function UserLogin({handleAlert}) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -19,16 +19,22 @@ function UserLogin() {
       password: password
     };
 
-    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/login`, userData,
-    { withCredentials: true });
-    if(response.status===200){
-      console.log(response.data);
-      console.log("Successful Login");
-      setUser(response.data.user);
-      navigate('/main');
-    }else{
-      console.log("Login Failed");
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/login`,
+       userData, { withCredentials: true });
+      if (response.status === 200) {
+        setUser(response.data.user);
+        navigate('/main');
+      }
+    } catch (error) {
+      handleAlert({
+        type: 'danger',
+        title: 'Error',
+        description: error.response?.data?.message || 'Login failed!'
+      });
     }
+      console.log("Login Failed");
+    
   };
 
   return (

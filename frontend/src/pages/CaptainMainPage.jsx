@@ -104,6 +104,7 @@ const CaptainMainPage = () => {
           <CaptainMap
             pickup={activeRide ? { lat: activeRide.pickup?.latitude, lng: activeRide.pickup?.longitude } : null}
             destination={activeRide ? { lat: activeRide.drop?.latitude, lng: activeRide.drop?.longitude } : null}
+            hasActiveRide={!!activeRide}
           />
         </div>
 
@@ -117,40 +118,42 @@ const CaptainMainPage = () => {
               </div>
             ) : (
               // Today's real earnings + show ride requests
-              <div className='px-8 py-4 h-[30%] bg-white flex gap-8 relative z-[2000] w-full md:rounded-t-2xl'>
-                <div className='flex-[1.5]'>
-                  <h3 className='text-gray-700 font-semibold text-base mb-3'>Today's Earnings</h3>
-                  <div className='flex gap-6 items-center'>
-                    <div>
-                      <p className='text-sm text-gray-600 mb-1'>Total Earned</p>
-                      <p className='text-3xl font-bold text-green-600'>
-                        Rs.{todayStats.totalEarned}
-                      </p>
-                    </div>
-                    <div className='w-px h-16 bg-gray-200'></div>
-                    <div>
-                      <p className='text-sm text-gray-600 mb-1'>Rides Completed</p>
-                      <p className='text-3xl font-bold text-orange-600'>
-                        {todayStats.ridesCompleted}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+             <div className='px-5 py-3 bg-white flex gap-4 items-center md:rounded-t-2xl'>
 
-                <div className='w-px bg-gray-300'></div>
+  {/* Earnings */}
+  <div className='flex-1'>
+    <h3 className='text-gray-600 text-sm font-medium mb-1'>Today's Earnings</h3>
 
-                <div className='flex-1 flex flex-col justify-center'>
-                  <h4 className='text-gray-700 font-semibold text-base mb-3'>
-                    Available Ride Request: <span className='font-bold text-indigo-500'>–</span>
-                  </h4>
-                  <button
-                    onClick={handleRideRequestPanelToggle}
-                    className='bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg text-base font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105'
-                  >
-                    {rideRequestPanelOpen ? "Hide Ride Requests" : "Show Ride Requests"}
-                  </button>
-                </div>
-              </div>
+    <div className='flex items-center gap-4'>
+      <div>
+        <p className='text-xs text-gray-500'>Earned</p>
+        <p className='text-xl font-bold text-green-600'>
+          Rs.{todayStats.totalEarned}
+        </p>
+      </div>
+
+      <div className='w-px h-10 bg-gray-200'></div>
+
+      <div>
+        <p className='text-xs text-gray-500'>Rides</p>
+        <p className='text-xl font-bold text-blue-600'>
+          {todayStats.ridesCompleted}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  {/* Button */}
+  <div className='flex flex-col justify-center items-end'>
+    <button
+      onClick={handleRideRequestPanelToggle}
+      className='bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm hover:scale-105 transition'
+    >
+      {rideRequestPanelOpen ? "Hide" : "Requests"}
+    </button>
+  </div>
+
+</div>
             )}
           </div>
 

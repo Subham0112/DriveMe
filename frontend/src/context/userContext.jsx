@@ -6,7 +6,7 @@ export const UserDataContext = React.createContext()
 const UserContext = ({ children }) => {
 
   const [user, setUser] = React.useState({
-
+    _id: '',
     fullname: {
       firstname: '',
       lastname: '',

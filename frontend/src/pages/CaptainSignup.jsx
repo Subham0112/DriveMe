@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 // import { CaptainDataContext } from '../context/CaptainContext';
 import axios from 'axios';
 
-const CaptainSignup = () => {
+const CaptainSignup = ({handleAlert}) => {
   const [step, setStep] = useState(1);
   const [firstname, setFirstname] = useState('');
   const [lastname, setLastname] = useState('');
@@ -44,13 +44,22 @@ const navigate = useNavigate();
     try {
       const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/captains/register`, captainData);
       if(response.status === 201){
+        handleAlert({
+          type: 'success',
+          title: 'Success',
+          description: 'Captain registered successfully!'
+        });
         console.log('Captain registered successfully:', response.data);
         // setCaptain(response.data.captain);
         navigate('/captainlogin');
       }
     } catch (error) {
-      console.error('Registration error:', error);
-    }
+  handleAlert({
+    type: 'danger',
+    title: 'Error',
+    description: error.response?.data?.message || 'Registration failed!'
+  });
+}
     
     console.log('Signup data:', captainData);
     setFirstname('');
@@ -68,7 +77,12 @@ const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 py-3 flex flex-col justify-center sm:py-10">
-      <div className="absolute top-4 left-4">
+      
+
+      <div className="relative py-3 w-[100%] sm:max-w-xl sm:mx-auto md:w-[500px] lg:w-[650px] mx-auto">
+        <div className="absolute inset-0 bg-gradient-to-r from-orange-300 to-orange-500 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl"></div>
+        <div className="relative px-4 py-5 bg-white shadow-lg sm:rounded-3xl sm:p-10">
+          <div className="absolute mb-2 top-4 left-4">
         <Link
           to="/"
           className="flex items-center text-orange-700 hover:text-orange-900"
@@ -80,13 +94,10 @@ const navigate = useNavigate();
         </Link>
       </div>
 
-      <div className="relative py-3 w-[100%] sm:max-w-xl sm:mx-auto md:w-[500px] lg:w-[550px] mx-auto">
-        <div className="absolute inset-0 bg-gradient-to-r from-orange-300 to-orange-500 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl"></div>
-        <div className="relative px-4 py-5 bg-white shadow-lg sm:rounded-3xl sm:p-10">
           <div className="max-w-md mx-auto">
             <div className="divide-y divide-gray-200">
               <div className="py-3 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
-                <h2 className="text-3xl font-bold text-center mb-4">
+                <h2 className="text-3xl font-bold text-center mb-4 mt-2">
                   Become a <span className='text-orange-500'>Rider</span>
                 </h2>
 

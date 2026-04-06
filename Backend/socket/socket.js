@@ -1,5 +1,6 @@
 const Captain = require('../models/captain.model');
 const User = require('../models/user.model'); // adjust path if needed
+const Ride = require('../models/ride.model'); // adjust path if needed
 
 let io;
 
@@ -42,17 +43,31 @@ function initSocket(serverIo) {
     LIVE LOCATION UPDATE
     ----------------------------------
     */
-    socket.on("updateLocation", async (data) => {
-      const { captainId, latitude, longitude } = data;
-
-      await Captain.findByIdAndUpdate(captainId, {
-        location: { latitude, longitude }
-      });
-
-      // send to all users (later we will limit per ride)
-      socket.broadcast.emit("captain-location-update", data);
+   socket.on('captain-location-update', async ({ captainId, lat, lng }) => {
+  try {
+    // 1. Persist latest location to DB
+    await Captain.findByIdAndUpdate(captainId, {
+      location: { latitude: lat, longitude: lng },
     });
-
+ 
+    // 2. Find the ride that is currently active for this captain
+    const ride = await Ride.findOne({
+      captain: captainId,
+      rideStatus: { $in: ['accepted', 'ongoing'] },
+    }).populate('user', 'socketId');
+ 
+    // 3. Forward only to that user's socket — nobody else sees this
+    if (ride?.user?.socketId) {
+      io.to(ride.user.socketId).emit('captain-location-update', {
+        captainId,
+        lat,
+        lng,
+      });
+    }
+  } catch (err) {
+    console.error('captain-location-update socket error:', err);
+  }
+});
 
     /*
     ----------------------------------

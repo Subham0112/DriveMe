@@ -14,6 +14,10 @@ router.post('/cancel', rideController.cancelRide);
 
 router.post('/update-location', rideController.updateCaptainLocation);
 router.get('/:rideId', rideController.getRide);
+router.get('/user-history/:userId', rideController.getUserRideHistory);
 router.get('/captain-today-stats/:captainId', rideController.getCaptainTodayStats)
+router.post('/complete-cash',  rideController.completeRideCash);
+router.post('/esewa-init',     rideController.initEsewaPayment);
+router.post('/esewa-verify',   rideController.verifyEsewaPayment);
 
 module.exports = router;

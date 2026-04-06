@@ -84,8 +84,11 @@ const captainSchema = new Schema({
     longitude:{
       type: Number
     }
+  },
+  dateJoined: {
+    type: Date,
+    default: Date.now
   }
-
 });
 
 captainSchema.methods.generateAuthToken = function() {

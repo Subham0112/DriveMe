@@ -5,7 +5,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 import axios from 'axios';
 
-const CaptainLogin = () => {
+const CaptainLogin = ({handleAlert}) => {
 const [email, setEmail] = useState('');
 const [password, setPassword] = useState('');
 const [showPassword, setShowPassword] = useState(false);
@@ -19,8 +19,8 @@ const {captain, setCaptain}=useContext(CaptainDataContext);
       email: email,
       password: password,
     };
-
-    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/captains/login`, captainData,{
+try{
+const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/captains/login`, captainData,{
       withCredentials: true
     });
     if(response.status===200){
@@ -28,9 +28,16 @@ const {captain, setCaptain}=useContext(CaptainDataContext);
       console.log("Successful Login");
       setCaptain(response.data.captain);
       navigate('/captainmain');
-    } else{
-      console.log("Login Failed");
     }
+}catch(error){
+  handleAlert({
+    type: 'danger',
+    title: 'Error',
+    description: error.response?.data?.message || 'Login failed!'
+  });
+}
+      console.log("Login Failed");
+    
   };
 
   return (

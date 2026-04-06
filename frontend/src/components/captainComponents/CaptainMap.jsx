@@ -1,8 +1,10 @@
-import React, { useEffect, useState, useRef } from "react"
+import React, { useEffect, useState, useRef, useContext } from "react"
 import { MapContainer, TileLayer, Marker, Polyline } from "react-leaflet"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
 import { MdMyLocation } from "react-icons/md"
+import socket from "../../socket/socket"
+import { CaptainDataContext } from "../../context/CaptainContext"
 
 delete L.Icon.Default.prototype._getIconUrl
 L.Icon.Default.mergeOptions({
@@ -13,7 +15,7 @@ L.Icon.Default.mergeOptions({
 
 const defaultCenter = [26.4559, 87.2802]
 
-// Small solid green dot for captain position — no big accuracy ring
+// Orange dot — captain's own position
 const captainDotIcon = L.divIcon({
   className: '',
   html: `<div style="
@@ -21,43 +23,61 @@ const captainDotIcon = L.divIcon({
     background: #fa811f;
     border: 3px solid white;
     border-radius: 50%;
-    box-shadow: 0 0 0 2px #a3721655;
+    box-shadow: 0 0 0 2px #fa811f55;
   "></div>`,
   iconSize: [18, 18],
   iconAnchor: [9, 9],
 })
 
-const CaptainMap = ({ pickup, destination }) => {
+// CaptainMap now accepts `hasActiveRide` so it only emits location
+// when there is actually a ride in progress (saves bandwidth otherwise)
+const CaptainMap = ({ pickup, destination, hasActiveRide }) => {
   const [captainLocation, setCaptainLocation] = useState(null)
   const [route, setRoute] = useState([])
   const mapRef = useRef(null)
+  const { captain } = useContext(CaptainDataContext)
 
-  // GPS tracking
+  // GPS watch — continuously tracks position and emits to socket when ride is active
   useEffect(() => {
     if (!navigator.geolocation) return
+
     const watchId = navigator.geolocation.watchPosition(
       (pos) => {
-        const loc = [pos.coords.latitude, pos.coords.longitude]
-        setCaptainLocation(loc)
-        if (mapRef.current) mapRef.current.flyTo(loc, 17)
+        const { latitude: lat, longitude: lng } = pos.coords
+        setCaptainLocation([lat, lng])
+
+        // Only pan map when not on active ride (so captain can see route)
+        if (mapRef.current && !hasActiveRide) {
+          mapRef.current.flyTo([lat, lng], 17)
+        }
+
+        // Emit live location to backend — backend relays to the right user
+        if (hasActiveRide && captain?._id && socket.connected) {
+          socket.emit('captain-location-update', {
+            captainId: captain._id,
+            lat,
+            lng,
+          })
+        }
       },
       (err) => {
-        console.log("GPS Error", err)
+        console.warn("GPS error:", err)
         setCaptainLocation(defaultCenter)
       },
       { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
     )
-    return () => navigator.geolocation.clearWatch(watchId)
-  }, [])
 
-  // Fix gray map
+    return () => navigator.geolocation.clearWatch(watchId)
+  }, [captain?._id, hasActiveRide])
+
+  // Fix gray map on first render
   useEffect(() => {
     if (mapRef.current) {
       setTimeout(() => mapRef.current.invalidateSize(), 400)
     }
   }, [])
 
-  // Fetch route for active ride; clear when ride ends
+  // Fetch route when active ride has pickup + destination; clear when ride ends
   useEffect(() => {
     if (!pickup || !destination) {
       setRoute([])
@@ -69,12 +89,11 @@ const CaptainMap = ({ pickup, destination }) => {
           `https://router.project-osrm.org/route/v1/driving/${pickup.lng},${pickup.lat};${destination.lng},${destination.lat}?overview=full&geometries=geojson`
         )
         const data = await res.json()
-        if (data.routes && data.routes.length > 0) {
+        if (data.routes?.[0]) {
           const coords = data.routes[0].geometry.coordinates.map((c) => [c[1], c[0]])
           setRoute(coords)
           if (mapRef.current) {
-            const bounds = L.latLngBounds(coords)
-            mapRef.current.fitBounds(bounds, { padding: [60, 60] })
+            mapRef.current.fitBounds(L.latLngBounds(coords), { padding: [60, 60] })
           }
         }
       } catch (err) {
@@ -102,7 +121,6 @@ const CaptainMap = ({ pickup, destination }) => {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        {/* FIX: Small green dot only — no large accuracy circle */}
         {captainLocation && (
           <Marker position={captainLocation} icon={captainDotIcon} />
         )}
@@ -116,9 +134,9 @@ const CaptainMap = ({ pickup, destination }) => {
 
       <button
         onClick={recenterMap}
-        className="absolute bottom-10 right-4 z-[1000] bg-white p-3 rounded-full shadow-xl"
+        className="absolute bottom-10 right-4 z-[1000] bg-white p-3 rounded-full shadow-xl active:scale-90 transition-transform"
       >
-        <MdMyLocation size={22} className="text-green-600" />
+        <MdMyLocation size={22} className="text-orange-500" />
       </button>
     </div>
   )

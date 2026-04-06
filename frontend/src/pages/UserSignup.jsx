@@ -4,7 +4,7 @@ import axios from 'axios';
 // import { UserDataContext } from '../context/UserContext.jsx';
 
 
-const UserSignup = () => {
+const UserSignup = ({handleAlert}) => {
 const [firstname, setFirstname] = useState('');
   const [lastname, setLastname] = useState('');
   const [email, setEmail] = useState('');
@@ -24,6 +24,7 @@ const navigate=useNavigate();
       email:email,
       password:password
      } 
+try{
 
   const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/register`, newUser);
 
@@ -31,14 +32,21 @@ const navigate=useNavigate();
         // setUser(response.data.user);
         // console.log(response.data.token)
         // localStorage.setItem('userToken', response.data.token);
+        handleAlert({
+          type: 'success',
+          title: 'Success',
+          description: 'User registered successfully!'
+        });
         navigate('/login');
         console.log('User registered successfully:', response.data);
+      }}catch(error){
+
+        handleAlert({
+          type: 'danger',
+          title: 'Error',
+          description: error.response?.data?.message || 'User registration failed!'
+        });
       }
-  
-
-
-
-     // console.log('Signup data:', formData);
      console.log('Signup data:', newUser);
       setFirstname('');
     setLastname('');
