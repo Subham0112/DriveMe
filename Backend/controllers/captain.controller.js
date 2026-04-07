@@ -63,6 +63,121 @@ const loginCaptain = async (req, res, next) => {
 const getCaptainProfile = async (req, res, next) => {
   res.status(200).json(req.captain)
 }
+const updateCaptainProfile = async (req, res) => {
+  try {
+    const { fullname, email, phone, farePerKm } = req.body;
+    const captainId = req.captain._id;
+ 
+    if (email && email !== req.captain.email) {
+      const existing = await Captain.findOne({ email });
+      if (existing && String(existing._id) !== String(captainId)) {
+        return res.status(400).json({ message: 'Email is already in use.' });
+      }
+    }
+    if (phone && phone !== req.captain.phone) {
+      const existing = await Captain.findOne({ phone });
+      if (existing && String(existing._id) !== String(captainId)) {
+        return res.status(400).json({ message: 'Phone is already in use.' });
+      }
+    }
+ 
+    const updated = await Captain.findByIdAndUpdate(
+      captainId,
+      {
+        ...(fullname?.firstname && { 'fullname.firstname': fullname.firstname }),
+        ...(fullname?.lastname  && { 'fullname.lastname':  fullname.lastname }),
+        ...(email               && { email }),
+        ...(phone               && { phone }),
+        ...(farePerKm           && { farePerKm: parseFloat(farePerKm) }),
+      },
+      { new: true, runValidators: true }
+    );
+ 
+    if (!updated) return res.status(404).json({ message: 'Captain not found' });
+    res.json({ success: true, captain: updated });
+  } catch (err) {
+    console.error('updateCaptainProfile error:', err);
+    res.status(500).json({ message: 'Could not update profile' });
+  }
+};
+ 
+// ── UPDATE VEHICLE ────────────────────────────────────────────────
+const updateCaptainVehicle = async (req, res) => {
+  try {
+    const { vehicle } = req.body;
+    const captainId = req.captain._id;
+ 
+    if (!vehicle) return res.status(400).json({ message: 'Vehicle data is required' });
+ 
+    // Check plate uniqueness if it changed
+    if (vehicle.plate && vehicle.plate !== req.captain.vehicle?.plate) {
+      const existing = await Captain.findOne({ 'vehicle.plate': vehicle.plate });
+      if (existing && String(existing._id) !== String(captainId)) {
+        return res.status(400).json({ message: 'Plate number already registered.' });
+      }
+    }
+ 
+    const updated = await Captain.findByIdAndUpdate(
+      captainId,
+      {
+        ...(vehicle.color       && { 'vehicle.color':       vehicle.color }),
+        ...(vehicle.plate       && { 'vehicle.plate':       vehicle.plate }),
+        ...(vehicle.capacity    && { 'vehicle.capacity':    parseInt(vehicle.capacity) }),
+        ...(vehicle.vehicleType && { 'vehicle.vehicleType': vehicle.vehicleType }),
+      },
+      { new: true, runValidators: true }
+    );
+ 
+    if (!updated) return res.status(404).json({ message: 'Captain not found' });
+    res.json({ success: true, captain: updated });
+  } catch (err) {
+    console.error('updateCaptainVehicle error:', err);
+    res.status(500).json({ message: 'Could not update vehicle' });
+  }
+};
+ 
+// ── CHANGE PASSWORD ───────────────────────────────────────────────
+const changeCaptainPassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: 'Both fields are required.' });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: 'New password must be at least 6 characters.' });
+    }
+ 
+    const captain = await Captain.findById(req.captain._id).select('+password');
+    if (!captain) return res.status(404).json({ message: 'Captain not found' });
+ 
+    const isMatch = await captain.comparePassword(currentPassword);
+    if (!isMatch) return res.status(401).json({ message: 'Current password is incorrect.' });
+ 
+    captain.password = await Captain.hashPassword(newPassword);
+    await captain.save();
+ 
+    res.json({ success: true, message: 'Password changed successfully.' });
+  } catch (err) {
+    console.error('changeCaptainPassword error:', err);
+    res.status(500).json({ message: 'Could not change password' });
+  }
+};
+ 
+// ── ALL-TIME RIDE STATS ───────────────────────────────────────────
+const getCaptainAllStats = async (req, res) => {
+  try {
+    const { captainId } = req.params;
+    const totalRides = await Ride.countDocuments({
+      captain: captainId,
+      rideStatus: 'completed',
+    });
+    res.json({ success: true, totalRides });
+  } catch (err) {
+    console.error('getCaptainAllStats error:', err);
+    res.status(500).json({ message: 'Error fetching stats' });
+  }
+};
+
 const logoutCaptain= async (req, res) => {
   try {
     const token =
@@ -93,5 +208,9 @@ module.exports = {
   registerCaptain,
   loginCaptain,
   getCaptainProfile,
-  logoutCaptain
+  logoutCaptain,
+  updateCaptainProfile,
+  updateCaptainVehicle,
+  changeCaptainPassword,
+  getCaptainAllStats
 };

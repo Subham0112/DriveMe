@@ -49,7 +49,7 @@ const handleDismiss = () => setAlert(null);
         } />
         <Route path="/user/profile" element={
           <UserProtectAuth>
-            <UserProfile />
+            <UserProfile handleAlert={handleAlert}/>
           </UserProtectAuth>
         } />
         <Route path="/payment/success" element={

@@ -22,6 +22,10 @@ router.route("/login").post([
 ],captainController.loginCaptain);
 
 router.route("/profile").get(authMiddleware.authCaptain,captainController.getCaptainProfile);
+router.route("/profile-update").put(authMiddleware.authCaptain,captainController.updateCaptainProfile);
+router.route("/vehicle-update").put(authMiddleware.authCaptain,captainController.updateCaptainVehicle);
+router.route("/password-update").put(authMiddleware.authCaptain,captainController.changeCaptainPassword);
+router.route("/stats").get(authMiddleware.authCaptain,captainController.getCaptainAllStats);
 router.route("/logout").get(captainController.logoutCaptain);
 
 module.exports = router;

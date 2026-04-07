@@ -168,12 +168,41 @@ exports.getUserRideHistory = async (req, res) => {
   }
 };
 
-// NEW: Get today's stats for a captain (total earned + rides completed today)
+exports.getCaptainRideHistory = async (req, res) => {
+  try {
+    const { captainId } = req.params;
+
+    const rides = await Ride.find({ captain: captainId })
+      .populate('user', 'fullname email')
+      .sort({ createdAt: -1 });
+
+    // ✅ ONLY completed rides count
+    const completedRides = rides.filter(r => r.rideStatus === 'completed');
+
+    const totalRides = completedRides.length;
+
+    // ✅ ONLY completed rides earnings
+    const totalEarned = completedRides.reduce((sum, ride) => {
+      return sum + (ride.fare || 0);
+    }, 0);
+
+    res.json({
+      success: true,
+      rides,
+      totalRides,
+      totalEarned,
+    });
+
+  } catch (error) {
+    console.error('getCaptainRideHistory error:', error);
+    res.status(500).json({ message: 'Error fetching captain ride history' });
+  }
+};
+
 exports.getCaptainTodayStats = async (req, res) => {
   try {
     const { captainId } = req.params;
 
-    // Build start and end of today in UTC
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
 
@@ -197,8 +226,6 @@ exports.getCaptainTodayStats = async (req, res) => {
 };
 
 
-// ─── PAYMENT: Cash ────────────────────────────────────────────────────────────
-// Called when user selects "Cash in Hand". Marks ride completed + payment paid.
 exports.completeRideCash = async (req, res) => {
   try {
     const io = getIO();
@@ -222,8 +249,6 @@ exports.completeRideCash = async (req, res) => {
   }
 };
 
-// ─── PAYMENT: eSewa — Step 1: Generate signed form fields ─────────────────────
-// Frontend calls this to get the HMAC-signed payload to POST to eSewa sandbox.
 exports.initEsewaPayment = async (req, res) => {
   try {
     const { rideId, amount } = req.body;
@@ -231,16 +256,13 @@ exports.initEsewaPayment = async (req, res) => {
       return res.status(400).json({ message: 'rideId and amount are required' });
     }
 
-    // eSewa sandbox credentials — move to .env in production
     const ESEWA_PRODUCT_CODE = process.env.ESEWA_PRODUCT_CODE || 'EPAYTEST';
     const ESEWA_SECRET_KEY   = process.env.ESEWA_SECRET_KEY   || '8gBm/:&EnhH.1/q';
     const FRONTEND_URL       = process.env.FRONTEND_URL        || 'http://localhost:5173';
 
-    // Encode rideId inside transaction_uuid so we can recover it on the success page
     const transactionUuid = `RIDE-${rideId}-${Date.now()}`;
     const totalAmount     = parseFloat(amount);
 
-    // eSewa requires the message in exactly this format
     const message = `total_amount=${totalAmount},transaction_uuid=${transactionUuid},product_code=${ESEWA_PRODUCT_CODE}`;
     const signature = crypto
       .createHmac('sha256', ESEWA_SECRET_KEY)
