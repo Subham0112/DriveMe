@@ -29,8 +29,7 @@ const captainDotIcon = L.divIcon({
   iconAnchor: [9, 9],
 })
 
-// CaptainMap now accepts `hasActiveRide` so it only emits location
-// when there is actually a ride in progress (saves bandwidth otherwise)
+
 const CaptainMap = ({ pickup, destination, hasActiveRide }) => {
   const [captainLocation, setCaptainLocation] = useState(null)
   const [route, setRoute] = useState([])
@@ -46,12 +45,12 @@ const CaptainMap = ({ pickup, destination, hasActiveRide }) => {
         const { latitude: lat, longitude: lng } = pos.coords
         setCaptainLocation([lat, lng])
 
-        // Only pan map when not on active ride (so captain can see route)
+        
         if (mapRef.current && !hasActiveRide) {
           mapRef.current.flyTo([lat, lng], 17)
         }
 
-        // Emit live location to backend — backend relays to the right user
+        
         if (hasActiveRide && captain?._id && socket.connected) {
           socket.emit('captain-location-update', {
             captainId: captain._id,
@@ -77,7 +76,7 @@ const CaptainMap = ({ pickup, destination, hasActiveRide }) => {
     }
   }, [])
 
-  // Fetch route when active ride has pickup + destination; clear when ride ends
+  
   useEffect(() => {
     if (!pickup || !destination) {
       setRoute([])

@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 const InfoPage = () => {
   return (
     <div className='info-page min-h-screen w-full bg-gradient-to-br from-cyan-800 to-cyan-950 flex flex-col'>
-      {/* Header with Back Button and Logo */}
+   
       <div className='p-6'>
         <Link to="/" className='inline-flex items-center text-cyan-300 hover:text-white mb-4 transition-colors'>
           <svg className='w-6 h-6 mr-2' fill='none' stroke='currentColor' viewBox='0 0 24 24'>

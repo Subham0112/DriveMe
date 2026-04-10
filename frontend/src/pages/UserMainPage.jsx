@@ -37,7 +37,6 @@ const UserMainPage = () => {
   const locationRef = useRef(null)
   const activeRidePanelRef = useRef(null)
   const bookingInfoRef = useRef(null)
-  // Store userId in a ref so the reconnect handler always has the latest value
   const userIdRef = useRef(null)
 
   const navigate = useNavigate()
@@ -69,11 +68,9 @@ const UserMainPage = () => {
 
       if (!userId) return
 
-      // Store in ref so the 'connect' handler always sees it
       userIdRef.current = userId
       console.log('Registering user:', userId)
 
-      // Register whenever socket connects or reconnects
       const registerUser = () => {
         if (userIdRef.current) {
           console.log('Socket connected — registering user:', userIdRef.current)
@@ -83,11 +80,9 @@ const UserMainPage = () => {
 
       socket.on('connect', registerUser)
 
-      // Connect the socket — registration happens in the 'connect' handler above
       if (!socket.connected) {
         socket.connect()
       } else {
-        // Already connected (e.g. HMR), register immediately
         registerUser()
       }
 

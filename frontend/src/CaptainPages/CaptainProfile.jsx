@@ -234,7 +234,7 @@ const CaptainProfile = ({ handleAlert }) => {
       <div className='h-screen md:ml-64 pb-16 md:pb-0 overflow-y-auto'>
         <div className='p-6 max-w-2xl mx-auto'>
 
-          {/* Local alert (validation) */}
+          
           {alert && (
             <div className={`mb-4 px-4 py-3 rounded-xl flex items-center gap-3 text-sm font-medium ${
               alert.type === 'success'
@@ -245,8 +245,6 @@ const CaptainProfile = ({ handleAlert }) => {
               {alert.msg}
             </div>
           )}
-
-          {/* ── Avatar + Name ─────────────────────────────────────── */}
           <div className='bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-4'>
             <div className='flex items-center gap-5'>
               <div className='w-20 h-20 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-2xl font-bold flex-shrink-0'>

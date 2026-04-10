@@ -5,13 +5,10 @@ const API_BASE = import.meta.env.VITE_BASE_URL || 'http://localhost:3000'
 
 const PaymentModal = ({ ride, onClose, onRideCompleted }) => {
   const [loading, setLoading] = useState(false)
-  const [step, setStep] = useState('choose') // 'choose' | 'processing' | 'waiting_captain' | 'success' | 'failed'
+  const [step, setStep] = useState('choose') 
   const [errorMsg, setErrorMsg] = useState('')
 
-  // ── CASH PAYMENT ─────────────────────────────────────────────
-  // Cash does NOT complete the ride — just marks payment intent as cash_pending.
-  // Captain must click "Complete Ride" on their side to finish.
-  // UserMainPage's socket.on('ride-completed') will auto-reset everything.
+  
   const handleCash = async () => {
     setLoading(true)
     setStep('processing')
@@ -38,11 +35,7 @@ const PaymentModal = ({ ride, onClose, onRideCompleted }) => {
     }
   }
 
-  // ── ESEWA PAYMENT ─────────────────────────────────────────────
-  // Gets signed form fields from backend, then POSTs to eSewa sandbox.
-  // eSewa redirects browser to /payment/success or /payment/failure.
-  // PaymentSuccess page verifies signature, completes ride, and socket
-  // emits ride-completed to BOTH user and captain.
+
   const handleEsewa = async () => {
     setLoading(true)
     try {

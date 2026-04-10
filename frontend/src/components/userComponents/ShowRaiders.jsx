@@ -8,7 +8,7 @@ const ShowRaiders = ({ onSelectRider, distance, duration }) => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  // ✅ Fetch real active captains from backend
+ 
   useEffect(() => {
     const fetchCaptains = async () => {
       try {
@@ -17,7 +17,6 @@ const ShowRaiders = ({ onSelectRider, distance, duration }) => {
         const data = await res.json()
 
         if (data.success) {
-          // ✅ Compute fare for each captain based on distance & their farePerKm
         const captainsWithFare = data.captains.map(captain => {
         const farePerKm = captain.farePerKm || 20;
         return {

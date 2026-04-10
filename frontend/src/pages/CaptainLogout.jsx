@@ -7,11 +7,11 @@ const CaptainLogout = () => {
 
   useEffect(() => {
     axios.get(`${import.meta.env.VITE_BASE_URL}/captains/logout`, {
-      withCredentials: true, // 🔥 REQUIRED
+      withCredentials: true, 
     })
     .then((res) => {
       console.log("Logout Successful:", res.data);
-      localStorage.removeItem("captainToken"); // optional cleanup
+      localStorage.removeItem("captainToken"); 
       navigate("/captainlogin");
     })
     .catch((error) => {

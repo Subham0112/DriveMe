@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { MapPin, Navigation } from 'lucide-react'
 
-// Morang district bounding box (viewbox for Nominatim: left,top,right,bottom = minLng,maxLat,maxLng,minLat)
+
 const MORANG_VIEWBOX = '86.8,26.85,87.75,26.15'
 // Broader Nepal bounding box as fallback
 const NEPAL_VIEWBOX = '80.05,30.45,88.20,26.35'
@@ -26,9 +26,7 @@ const LocationSearchPanel = ({ query, onSelectLocation, isPickup = false }) => {
       setLoading(true)
       setError(null)
       try {
-        // Search restricted to Morang district first, then fallback to Nepal
-        // bounded=1 ensures results stay within viewbox
-        // countrycodes=np restricts to Nepal only
+
         const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query.trim())}&limit=8&addressdetails=1&countrycodes=np&viewbox=${MORANG_VIEWBOX}&bounded=0`
 
         const res = await fetch(url, {
@@ -37,8 +35,7 @@ const LocationSearchPanel = ({ query, onSelectLocation, isPickup = false }) => {
         if (!res.ok) throw new Error('Failed to fetch')
         const data = await res.json()
 
-        // Filter: prefer results within Morang/nearby districts
-        // Morang lat ~26.15–26.85, lng ~86.8–87.75
+        
         const morangBounds = { minLat: 26.1, maxLat: 26.9, minLng: 86.7, maxLng: 87.8 }
         const filtered = data.filter(p => {
           const lat = parseFloat(p.lat)
@@ -76,7 +73,7 @@ const LocationSearchPanel = ({ query, onSelectLocation, isPickup = false }) => {
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const { latitude: lat, longitude: lng } = pos.coords
-        // Reverse geocode to get a human-readable address
+
         try {
           const res = await fetch(
             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=16&addressdetails=1`,

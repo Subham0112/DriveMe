@@ -4,14 +4,12 @@ import { CheckCircle, AlertCircle } from 'lucide-react'
 
 const API_BASE = import.meta.env.VITE_BASE_URL || 'http://localhost:3000'
 
-// eSewa redirects to /payment/success?data={base64_json} after a successful payment.
-// This page decodes the response, sends it to our backend for signature verification,
-// and then completes the ride if everything checks out.
+
 
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const [status, setStatus] = useState('verifying') // 'verifying' | 'success' | 'failed'
+  const [status, setStatus] = useState('verifying') 
   const [message, setMessage] = useState('')
 
   useEffect(() => {
@@ -25,11 +23,11 @@ const PaymentSuccess = () => {
       }
 
       try {
-        // Decode base64 → JSON so we can extract the rideId
+    
         const decoded = JSON.parse(atob(encodedData))
-        // transaction_uuid was set as "RIDE-{rideId}-{timestamp}" by our backend
+   
         const parts = decoded.transaction_uuid?.split('-')
-        // parts = ['RIDE', rideId, timestamp]
+       
         const rideId = parts?.[1]
 
         if (!rideId) {

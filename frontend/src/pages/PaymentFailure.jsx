@@ -2,8 +2,7 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AlertCircle } from 'lucide-react'
 
-// eSewa redirects to /payment/failure when the user cancels or payment fails.
-// The ride stays in 'accepted' status so the user can try again.
+
 
 const PaymentFailure = () => {
   const navigate = useNavigate()

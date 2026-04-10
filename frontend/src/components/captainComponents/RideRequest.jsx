@@ -9,7 +9,7 @@ const RideRequest = ({ onRideAccepted }) => {
   const [pendingRides, setPendingRides] = useState([])
   const { captain } = useContext(CaptainDataContext)
 
-  // Listen for incoming ride requests via socket
+  
   useEffect(() => {
     const handleNewRide = (ride) => {
       setPendingRides((prev) => {
@@ -32,9 +32,9 @@ const RideRequest = ({ onRideAccepted }) => {
       })
       const data = await res.json()
       if (data.success) {
-        // Remove from pending list
+     
         setPendingRides((prev) => prev.filter((r) => r._id !== ride._id))
-        // Notify parent so CaptainMainPage can switch to ActiveRide view
+      
         onRideAccepted({ ride: data.ride || ride, captain: data.captain })
       } else {
         alert(data.message || 'Could not accept ride')

@@ -2,9 +2,7 @@ import React from 'react'
 import { IoIosArrowBack, IoIosCar, IoIosPin } from "react-icons/io";
 
 const RiderDetails = ({ rider, routeInfo, onBack, onBookRide, isBooking }) => {
-  // rider is a captain object from backend:
-  // { _id, fullname, vehicle: { color, plate, capacity, vehicleType }, farePerKm, fare, status }
-  // routeInfo: { distance, duration } — computed from OSRM
+
 
   const captainName = `${rider?.fullname?.firstname || ''} ${rider?.fullname?.lastname || ''}`.trim()
 

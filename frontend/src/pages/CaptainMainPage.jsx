@@ -17,7 +17,6 @@ const CaptainMainPage = () => {
   const [todayStats, setTodayStats] = useState({ totalEarned: 0, ridesCompleted: 0 })
 
   const rideReqRef = useRef(null)
-  // Store captainId in a ref so the 'connect' handler always has the latest value
   const captainIdRef = useRef(null)
 
   const { captain, setCaptain } = useContext(CaptainDataContext)
@@ -58,11 +57,10 @@ const CaptainMainPage = () => {
 
       if (!captainId) return
 
-      // Store in ref so the 'connect' handler always sees it even after re-renders
+     
       captainIdRef.current = captainId
       console.log('Registering captain:', captainId)
 
-      // Register on every connect/reconnect so socketId is always fresh in DB
       const registerCaptain = () => {
         if (captainIdRef.current) {
           console.log('Socket connected — registering captain:', captainIdRef.current)
@@ -72,18 +70,17 @@ const CaptainMainPage = () => {
 
       socket.on('connect', registerCaptain)
 
-      // Connect the socket — registration happens in the 'connect' handler above
+     
       if (!socket.connected) {
         socket.connect()
       } else {
-        // Already connected (e.g. HMR), register immediately
+    
         registerCaptain()
       }
 
-      // Fetch today's earnings on load
       fetchTodayStats(captainId)
 
-      // Listen for ride completion triggered by user payment (eSewa)
+   
       socket.on('ride-completed', () => {
         setActiveRide(null)
         fetchTodayStats(captainIdRef.current)
