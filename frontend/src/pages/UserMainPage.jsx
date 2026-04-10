@@ -27,11 +27,9 @@ const UserMainPage = () => {
   const [routeInfo, setRouteInfo] = useState({ distance: 0, duration: 0 })
   const [isBooking, setIsBooking] = useState(false)
 
-  // Ride states
   const [rideStatus, setRideStatus] = useState(null)
   const [acceptedCaptain, setAcceptedCaptain] = useState(null)
   const [activeRide, setActiveRide] = useState(null)
-  // Live captain location received via socket during active ride
   const [captainLiveLocation, setCaptainLiveLocation] = useState(null)
 
   const panelRef = useRef(null)
@@ -39,21 +37,18 @@ const UserMainPage = () => {
   const locationRef = useRef(null)
   const activeRidePanelRef = useRef(null)
   const bookingInfoRef = useRef(null)
+  // Store userId in a ref so the reconnect handler always has the latest value
+  const userIdRef = useRef(null)
 
   const navigate = useNavigate()
   const { user, setUser } = useContext(UserDataContext)
 
-  // FIX: Force-initialize all GSAP-controlled panels to 0 on mount.
-  // Tailwind's h-[0] class can be beaten by leftover GSAP inline styles
-  // when React re-mounts (HMR, StrictMode double-invoke, navigation back/forward).
-  // gsap.set writes height:0 as an inline style which always wins.
   useEffect(() => {
     if (panelRef.current) gsap.set(panelRef.current, { height: 0 })
     if (activeRidePanelRef.current) gsap.set(activeRidePanelRef.current, { height: 0 })
     if (arrowRef.current) gsap.set(arrowRef.current, { opacity: 0 })
   }, [])
 
-  // On mount: restore user from cookie, then register socket
   useEffect(() => {
     const restoreAndRegister = async () => {
       let userId = user?._id
@@ -73,9 +68,28 @@ const UserMainPage = () => {
       }
 
       if (!userId) return
+
+      // Store in ref so the 'connect' handler always sees it
+      userIdRef.current = userId
       console.log('Registering user:', userId)
-      socket.connect()
-      socket.emit('registerUser', userId)
+
+      // Register whenever socket connects or reconnects
+      const registerUser = () => {
+        if (userIdRef.current) {
+          console.log('Socket connected — registering user:', userIdRef.current)
+          socket.emit('registerUser', userIdRef.current)
+        }
+      }
+
+      socket.on('connect', registerUser)
+
+      // Connect the socket — registration happens in the 'connect' handler above
+      if (!socket.connected) {
+        socket.connect()
+      } else {
+        // Already connected (e.g. HMR), register immediately
+        registerUser()
+      }
 
       socket.on('ride-accepted', ({ rideId, captain }) => {
         setRideStatus('accepted')
@@ -118,7 +132,7 @@ const UserMainPage = () => {
         setCaptainLiveLocation({ lat, lng })
       })
 
-      socket.on('ride-completed', () => {
+      socket.on('ride-completed', (_data) => {
         setRideStatus(null)
         setAcceptedCaptain(null)
         setActiveRide(null)
@@ -134,6 +148,7 @@ const UserMainPage = () => {
     restoreAndRegister()
 
     return () => {
+      socket.off('connect')
       socket.off('ride-accepted')
       socket.off('ride-rejected')
       socket.off('ride-cancelled')
@@ -142,7 +157,6 @@ const UserMainPage = () => {
     }
   }, [])
 
-  // Animate active ride panel in/out
   useEffect(() => {
     if (activeRide && activeRidePanelRef.current) {
       gsap.to(activeRidePanelRef.current, { duration: 0.6, height: '55vh', ease: 'power3.out' })
@@ -299,7 +313,6 @@ const UserMainPage = () => {
           />
         </div>
 
-        {/* Waiting banner */}
         {rideStatus === 'waiting' && !activeRide && (
           <div className='absolute top-20 left-1/2 -translate-x-1/2 z-[3000] bg-white shadow-xl rounded-2xl px-6 py-4 flex items-center gap-3 border border-blue-100'>
             <div className='w-5 h-5 border-4 border-blue-500 border-t-transparent rounded-full animate-spin'></div>
@@ -310,7 +323,6 @@ const UserMainPage = () => {
           </div>
         )}
 
-        {/* Rejected banner */}
         {rideStatus === 'rejected' && (
           <div className='absolute top-20 left-1/2 -translate-x-1/2 z-[3000] bg-white shadow-xl rounded-2xl px-6 py-4 border border-red-100'>
             <p className='font-bold text-red-500 text-base'>Ride Rejected</p>
@@ -331,7 +343,6 @@ const UserMainPage = () => {
           </div>
         )}
 
-        {/* Captain cancelled banner */}
         {rideStatus === 'cancelled' && !activeRide && (
           <div className='absolute top-20 left-1/2 -translate-x-1/2 z-[3000] bg-white shadow-xl rounded-2xl px-6 py-4 border border-orange-100'>
             <p className='font-bold text-orange-500 text-base'>Ride Cancelled</p>
@@ -342,7 +353,6 @@ const UserMainPage = () => {
 
         <div className='flex flex-col justify-end h-screen absolute top-0 w-full md:w-[calc(100vw-16rem)] pb-16 md:pb-0 overflow-auto pointer-events-none'>
 
-          {/* Search form */}
           {!activeRide && (
             <div ref={locationRef} className='px-[15px] py-[5px] bg-white relative z-[2000] md:max-w-md md:mx-auto md:rounded-t-2xl md:shadow-xl max-h-[40vh] pointer-events-auto'>
               <IoIosArrowDown ref={arrowRef} className='text-3xl opacity-0 absolute top-2 right-5 text-gray-500 cursor-pointer z-20' onClick={handlePanelClose} />
@@ -387,9 +397,6 @@ const UserMainPage = () => {
             </div>
           )}
 
-          {/* Search results / raiders / rider details panel
-              style={{ height: 0 }} acts as a guaranteed starting point that
-              beats both Tailwind classes and any previously applied GSAP styles */}
           {!activeRide && (
             <div
               ref={panelRef}
@@ -422,7 +429,6 @@ const UserMainPage = () => {
             </div>
           )}
 
-          {/* Active ride panel */}
           <div
             ref={activeRidePanelRef}
             style={{ height: 0 }}
@@ -433,7 +439,6 @@ const UserMainPage = () => {
                 ride={activeRide}
                 captain={acceptedCaptain}
                 onRideCancelled={handleRideCancelled}
-                onRideCompleted={handleRideCancelled}
               />
             )}
           </div>

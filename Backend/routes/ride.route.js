@@ -17,6 +17,7 @@ router.get('/:rideId', rideController.getRide);
 router.get('/user-history/:userId', rideController.getUserRideHistory);
 router.get('/captain-history/:captainId', rideController.getCaptainRideHistory);
 router.get('/captain-today-stats/:captainId', rideController.getCaptainTodayStats)
+router.post('/mark-cash', rideController.markCashPayment);
 router.post('/complete-cash',  rideController.completeRideCash);
 router.post('/esewa-init',     rideController.initEsewaPayment);
 router.post('/esewa-verify',   rideController.verifyEsewaPayment);

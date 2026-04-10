@@ -353,4 +353,20 @@ exports.verifyEsewaPayment = async (req, res) => {
     console.error('verifyEsewaPayment error:', error);
     res.status(500).json({ message: 'Payment verification failed' });
   }
-}
+};
+
+exports.markCashPayment = async (req, res) => {
+  try {
+    const { rideId } = req.body;
+    const ride = await Ride.findById(rideId);
+    if (!ride) return res.status(404).json({ message: 'Ride not found' });
+ 
+    ride.paymentStatus = 'cash_pending';
+    await ride.save();
+ 
+    res.json({ success: true, message: 'Cash payment method recorded. Waiting for captain to complete.' });
+  } catch (error) {
+    console.error('markCashPayment error:', error);
+    res.status(500).json({ message: 'Could not mark cash payment' });
+  }
+};

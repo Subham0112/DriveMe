@@ -14,14 +14,14 @@ const API_BASE = import.meta.env.VITE_BASE_URL || 'http://localhost:3000'
 const CaptainMainPage = () => {
   const [rideRequestPanelOpen, setRideRequestPanelOpen] = useState(false)
   const [activeRide, setActiveRide] = useState(null)
-
-  // Real today's stats
   const [todayStats, setTodayStats] = useState({ totalEarned: 0, ridesCompleted: 0 })
 
   const rideReqRef = useRef(null)
+  // Store captainId in a ref so the 'connect' handler always has the latest value
+  const captainIdRef = useRef(null)
+
   const { captain, setCaptain } = useContext(CaptainDataContext)
 
-  // Fetch today's stats for the captain
   const fetchTodayStats = async (captainId) => {
     try {
       const res = await fetch(`${API_BASE}/rides/captain-today-stats/${captainId}`, {
@@ -36,7 +36,6 @@ const CaptainMainPage = () => {
     }
   }
 
-  // On mount: restore captain from cookie if context is empty, then register socket
   useEffect(() => {
     const restoreAndRegister = async () => {
       let captainId = captain?._id
@@ -58,15 +57,45 @@ const CaptainMainPage = () => {
       }
 
       if (!captainId) return
+
+      // Store in ref so the 'connect' handler always sees it even after re-renders
+      captainIdRef.current = captainId
       console.log('Registering captain:', captainId)
-      socket.connect()
-      socket.emit('registerCaptain', captainId)
+
+      // Register on every connect/reconnect so socketId is always fresh in DB
+      const registerCaptain = () => {
+        if (captainIdRef.current) {
+          console.log('Socket connected — registering captain:', captainIdRef.current)
+          socket.emit('registerCaptain', captainIdRef.current)
+        }
+      }
+
+      socket.on('connect', registerCaptain)
+
+      // Connect the socket — registration happens in the 'connect' handler above
+      if (!socket.connected) {
+        socket.connect()
+      } else {
+        // Already connected (e.g. HMR), register immediately
+        registerCaptain()
+      }
 
       // Fetch today's earnings on load
       fetchTodayStats(captainId)
+
+      // Listen for ride completion triggered by user payment (eSewa)
+      socket.on('ride-completed', () => {
+        setActiveRide(null)
+        fetchTodayStats(captainIdRef.current)
+      })
     }
 
     restoreAndRegister()
+
+    return () => {
+      socket.off('connect')
+      socket.off('ride-completed')
+    }
   }, [])
 
   const handleRideRequestPanelToggle = () => {
@@ -89,9 +118,7 @@ const CaptainMainPage = () => {
 
   const handleRideEnded = () => {
     setActiveRide(null)
-    // Refresh stats after a ride completes or is cancelled
-    const captainId = captain?._id
-    if (captainId) fetchTodayStats(captainId)
+    if (captainIdRef.current) fetchTodayStats(captainIdRef.current)
   }
 
   return (
@@ -112,48 +139,44 @@ const CaptainMainPage = () => {
 
           <div className='pointer-events-auto bg-white relative z-[2000] w-full md:w-[75%] md:mx-auto md:rounded-t-2xl md:shadow-xl'>
             {activeRide ? (
-              // Active ride replaces earnings panel
               <div className='min-h-[220px]'>
                 <ActiveRide ride={activeRide} onRideEnded={handleRideEnded} />
               </div>
             ) : (
-              // Today's real earnings + show ride requests
-             <div className='px-5 py-3 bg-white flex gap-4 items-center md:rounded-t-2xl'>
+              <div className='px-8 py-4 h-[30%] bg-white flex gap-8 relative z-[2000] w-full md:rounded-t-2xl'>
+                <div className='flex-[1.5]'>
+                  <h3 className='text-gray-700 font-semibold text-base mb-3'>Today's Earnings</h3>
+                  <div className='flex gap-6 items-center'>
+                    <div>
+                      <p className='text-sm text-gray-600 mb-1'>Total Earned</p>
+                      <p className='text-3xl font-bold text-green-600'>
+                        Rs.{todayStats.totalEarned}
+                      </p>
+                    </div>
+                    <div className='w-px h-16 bg-gray-200'></div>
+                    <div>
+                      <p className='text-sm text-gray-600 mb-1'>Rides Completed</p>
+                      <p className='text-3xl font-bold text-blue-600'>
+                        {todayStats.ridesCompleted}
+                      </p>
+                    </div>
+                  </div>
+                </div>
 
-  {/* Earnings */}
-  <div className='flex-1'>
-    <h3 className='text-gray-600 text-sm font-medium mb-1'>Today's Earnings</h3>
+                <div className='w-px bg-gray-300'></div>
 
-    <div className='flex items-center gap-4'>
-      <div>
-        <p className='text-xs text-gray-500'>Earned</p>
-        <p className='text-xl font-bold text-green-600'>
-          Rs.{todayStats.totalEarned}
-        </p>
-      </div>
-
-      <div className='w-px h-10 bg-gray-200'></div>
-
-      <div>
-        <p className='text-xs text-gray-500'>Rides</p>
-        <p className='text-xl font-bold text-blue-600'>
-          {todayStats.ridesCompleted}
-        </p>
-      </div>
-    </div>
-  </div>
-
-  {/* Button */}
-  <div className='flex flex-col justify-center items-end'>
-    <button
-      onClick={handleRideRequestPanelToggle}
-      className='bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm hover:scale-105 transition'
-    >
-      {rideRequestPanelOpen ? "Hide" : "Requests"}
-    </button>
-  </div>
-
-</div>
+                <div className='flex-1 flex flex-col justify-center'>
+                  <h4 className='text-gray-700 font-semibold text-base mb-3'>
+                    Available Ride Request: <span className='font-bold text-indigo-500'>–</span>
+                  </h4>
+                  <button
+                    onClick={handleRideRequestPanelToggle}
+                    className='bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white px-6 py-3 rounded-lg text-base font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105'
+                  >
+                    {rideRequestPanelOpen ? "Hide Ride Requests" : "Show Ride Requests"}
+                  </button>
+                </div>
+              </div>
             )}
           </div>
 
