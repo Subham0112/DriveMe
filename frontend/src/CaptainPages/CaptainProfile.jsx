@@ -27,10 +27,10 @@ const CaptainProfile = ({ handleAlert }) => {
   const [showPw, setShowPw] = useState({ current: false, new: false, confirm: false })
 
   const [loading, setLoading] = useState(false)
+  const [statusLoading, setStatusLoading] = useState(false)
   const [fetchLoading, setFetchLoading] = useState(true)
   const [alert, setAlert] = useState(null)
-  const [todayStats, setTodayStats] = useState({ totalEarned: 0, ridesCompleted: 0 })
-  const [allTimeRides, setAllTimeRides] = useState(0)
+  const [allTimeStats, setAllTimeStats] = useState({ totalEarned: 0, ridesCompleted: 0 })
 
   // Fetch captain profile + stats on mount
   useEffect(() => {
@@ -52,14 +52,9 @@ const CaptainProfile = ({ handleAlert }) => {
 
     const fetchStats = async (captainId) => {
       try {
-        const [todayRes, allRes] = await Promise.all([
-          fetch(`${API_BASE}/rides/captain-today-stats/${captainId}`, { credentials: 'include' }),
-          fetch(`${API_BASE}/rides/captain-all-stats/${captainId}`,   { credentials: 'include' }),
-        ])
-        const todayData = await todayRes.json()
-        const allData   = await allRes.json()
-        if (todayData.success) setTodayStats({ totalEarned: todayData.totalEarned, ridesCompleted: todayData.ridesCompleted })
-        if (allData.success)   setAllTimeRides(allData.totalRides)
+        const res = await fetch(`${API_BASE}/rides/captain-all-stats/${captainId}`, { credentials: 'include' })
+        const data = await res.json()
+        if (data.success) setAllTimeStats({ totalEarned: data.totalEarned, ridesCompleted: data.totalRides })
       } catch {}
     }
 
@@ -74,10 +69,8 @@ const CaptainProfile = ({ handleAlert }) => {
   useEffect(() => {
     if (captain?._id) {
       syncForms(captain)
-      fetch(`${API_BASE}/rides/captain-today-stats/${captain._id}`, { credentials: 'include' })
-        .then(r => r.json()).then(d => { if (d.success) setTodayStats({ totalEarned: d.totalEarned, ridesCompleted: d.ridesCompleted }) }).catch(() => {})
       fetch(`${API_BASE}/rides/captain-all-stats/${captain._id}`, { credentials: 'include' })
-        .then(r => r.json()).then(d => { if (d.success) setAllTimeRides(d.totalRides) }).catch(() => {})
+        .then(r => r.json()).then(d => { if (d.success) setAllTimeStats({ totalEarned: d.totalEarned, ridesCompleted: d.totalRides }) }).catch(() => {})
     }
   }, [captain?._id])
 
@@ -95,6 +88,31 @@ const CaptainProfile = ({ handleAlert }) => {
       capacity:    data.vehicle?.capacity    || '',
       vehicleType: data.vehicle?.vehicleType || 'car',
     })
+  }
+
+  // ── Toggle online/offline status ──────────────────────────────
+  const handleToggleStatus = async () => {
+    const newStatus = captain?.status === 'active' ? 'inactive' : 'active'
+    setStatusLoading(true)
+    try {
+      const res = await fetch(`${API_BASE}/captains/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ status: newStatus }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setCaptain(prev => ({ ...prev, status: newStatus }))
+        showLocalAlert('success', `You are now ${newStatus === 'active' ? 'Online' : 'Offline'}`)
+      } else {
+        showLocalAlert('error', data.message || 'Could not update status.')
+      }
+    } catch {
+      showLocalAlert('error', 'Network error. Please try again.')
+    } finally {
+      setStatusLoading(false)
+    }
   }
 
   const showLocalAlert = (type, msg) => {
@@ -116,7 +134,7 @@ const CaptainProfile = ({ handleAlert }) => {
     }
     setLoading(true)
     try {
-      const res = await fetch(`${API_BASE}/captains/profile-update`, {
+      const res = await fetch(`${API_BASE}/captains/profile`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -149,7 +167,7 @@ const CaptainProfile = ({ handleAlert }) => {
     }
     setLoading(true)
     try {
-      const res = await fetch(`${API_BASE}/captains/vehicle-update`, {
+      const res = await fetch(`${API_BASE}/captains/vehicle`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -183,7 +201,7 @@ const CaptainProfile = ({ handleAlert }) => {
     }
     setLoading(true)
     try {
-      const res = await fetch(`${API_BASE}/captains/password-update`, {
+      const res = await fetch(`${API_BASE}/captains/change-password`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -234,17 +252,19 @@ const CaptainProfile = ({ handleAlert }) => {
       <div className='h-screen md:ml-64 pb-16 md:pb-0 overflow-y-auto'>
         <div className='p-6 max-w-2xl mx-auto'>
 
-          
+          {/* Toast — fixed position so it never shifts layout */}
           {alert && (
-            <div className={`mb-4 px-4 py-3 rounded-xl flex items-center gap-3 text-sm font-medium ${
+            <div className={`fixed top-5 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-3 px-5 py-3 rounded-2xl shadow-xl text-sm font-semibold transition-all pointer-events-none ${
               alert.type === 'success'
-                ? 'bg-green-50 border border-green-200 text-green-700'
-                : 'bg-red-50 border border-red-200 text-red-700'
+                ? 'bg-green-500 text-white'
+                : 'bg-red-500 text-white'
             }`}>
               {alert.type === 'success' ? <Check size={16} /> : <X size={16} />}
               {alert.msg}
             </div>
           )}
+
+          {/* ── Avatar + Name ─────────────────────────────────────── */}
           <div className='bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-4'>
             <div className='flex items-center gap-5'>
               <div className='w-20 h-20 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-2xl font-bold flex-shrink-0'>
@@ -256,13 +276,6 @@ const CaptainProfile = ({ handleAlert }) => {
                 <div className='flex items-center gap-2 mt-1'>
                   <span className='inline-block text-xs bg-orange-50 text-orange-600 font-semibold px-3 py-0.5 rounded-full border border-orange-100'>
                     Captain
-                  </span>
-                  <span className={`inline-block text-xs font-semibold px-3 py-0.5 rounded-full border ${
-                    captain?.status === 'active'
-                      ? 'bg-green-50 text-green-600 border-green-100'
-                      : 'bg-gray-100 text-gray-500 border-gray-200'
-                  }`}>
-                    {captain?.status === 'active' ? 'Online' : 'Offline'}
                   </span>
                 </div>
               </div>
@@ -279,21 +292,57 @@ const CaptainProfile = ({ handleAlert }) => {
             </div>
           </div>
 
-          {/* ── Today's Earnings Banner ──────────────────────────── */}
+          {/* ── Online / Offline Status Toggle ───────────────────── */}
+          <div className='bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4'>
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center gap-3'>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                  captain?.status === 'active' ? 'bg-green-100' : 'bg-gray-100'
+                }`}>
+                  <div className={`w-3 h-3 rounded-full ${
+                    captain?.status === 'active' ? 'bg-green-500 animate-pulse' : 'bg-gray-400'
+                  }`}></div>
+                </div>
+                <div>
+                  <p className='text-sm font-bold text-gray-900'>
+                    {captain?.status === 'active' ? 'You are Online' : 'You are Offline'}
+                  </p>
+                  <p className='text-xs text-gray-500'>
+                    {captain?.status === 'active'
+                      ? 'Accepting ride requests'
+                      : 'Not receiving ride requests'}
+                  </p>
+                </div>
+              </div>
+              {/* Toggle switch */}
+              <button
+                onClick={handleToggleStatus}
+                disabled={statusLoading}
+                className={`relative w-14 h-7 rounded-full transition-all duration-300 focus:outline-none disabled:opacity-60 ${
+                  captain?.status === 'active' ? 'bg-green-500' : 'bg-gray-300'
+                }`}
+              >
+                <span className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform duration-300 flex items-center justify-center ${
+                  captain?.status === 'active' ? 'translate-x-7' : 'translate-x-0'
+                }`}>
+                  {statusLoading && (
+                    <span className='w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin'></span>
+                  )}
+                </span>
+              </button>
+            </div>
+          </div>
+
+          {/* ── All-Time Stats Banner ────────────────────────────── */}
           <div className='bg-gradient-to-r from-orange-500 to-orange-400 rounded-2xl p-5 mb-4 flex gap-4'>
             <div className='flex-1 text-center'>
-              <p className='text-orange-100 text-xs font-medium mb-1'>Today's Earnings</p>
-              <p className='text-white text-3xl font-bold'>Rs.{todayStats.totalEarned}</p>
-            </div>
-            <div className='w-px bg-orange-300'></div>
-            <div className='flex-1 text-center'>
-              <p className='text-orange-100 text-xs font-medium mb-1'>Rides Today</p>
-              <p className='text-white text-3xl font-bold'>{todayStats.ridesCompleted}</p>
+              <p className='text-orange-100 text-xs font-medium mb-1'>Total Earned</p>
+              <p className='text-white text-3xl font-bold'>Rs.{allTimeStats.totalEarned}</p>
             </div>
             <div className='w-px bg-orange-300'></div>
             <div className='flex-1 text-center'>
               <p className='text-orange-100 text-xs font-medium mb-1'>Total Rides</p>
-              <p className='text-white text-3xl font-bold'>{allTimeRides}</p>
+              <p className='text-white text-3xl font-bold'>{allTimeStats.ridesCompleted}</p>
             </div>
           </div>
 

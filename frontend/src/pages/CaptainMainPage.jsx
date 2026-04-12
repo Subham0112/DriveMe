@@ -14,13 +14,14 @@ const API_BASE = import.meta.env.VITE_BASE_URL || 'http://localhost:3000'
 const CaptainMainPage = () => {
   const [rideRequestPanelOpen, setRideRequestPanelOpen] = useState(false)
   const [activeRide, setActiveRide] = useState(null)
+
+  // Real today's stats
   const [todayStats, setTodayStats] = useState({ totalEarned: 0, ridesCompleted: 0 })
 
   const rideReqRef = useRef(null)
-  const captainIdRef = useRef(null)
-
   const { captain, setCaptain } = useContext(CaptainDataContext)
 
+  // Fetch today's stats for the captain
   const fetchTodayStats = async (captainId) => {
     try {
       const res = await fetch(`${API_BASE}/rides/captain-today-stats/${captainId}`, {
@@ -35,6 +36,7 @@ const CaptainMainPage = () => {
     }
   }
 
+  // On mount: restore captain from cookie if context is empty, then register socket
   useEffect(() => {
     const restoreAndRegister = async () => {
       let captainId = captain?._id
@@ -56,41 +58,24 @@ const CaptainMainPage = () => {
       }
 
       if (!captainId) return
-
-     
-      captainIdRef.current = captainId
       console.log('Registering captain:', captainId)
+      socket.connect()
+      socket.emit('registerCaptain', captainId)
 
-      const registerCaptain = () => {
-        if (captainIdRef.current) {
-          console.log('Socket connected — registering captain:', captainIdRef.current)
-          socket.emit('registerCaptain', captainIdRef.current)
-        }
-      }
-
-      socket.on('connect', registerCaptain)
-
-     
-      if (!socket.connected) {
-        socket.connect()
-      } else {
-    
-        registerCaptain()
-      }
-
+      // Fetch today's earnings on load
       fetchTodayStats(captainId)
 
-   
+      // Listen for ride completion triggered by user payment (eSewa)
+      // so the captain's active ride panel resets automatically.
       socket.on('ride-completed', () => {
         setActiveRide(null)
-        fetchTodayStats(captainIdRef.current)
+        fetchTodayStats(captainId)
       })
     }
 
     restoreAndRegister()
 
     return () => {
-      socket.off('connect')
       socket.off('ride-completed')
     }
   }, [])
@@ -115,7 +100,9 @@ const CaptainMainPage = () => {
 
   const handleRideEnded = () => {
     setActiveRide(null)
-    if (captainIdRef.current) fetchTodayStats(captainIdRef.current)
+    // Refresh stats after a ride completes or is cancelled
+    const captainId = captain?._id
+    if (captainId) fetchTodayStats(captainId)
   }
 
   return (
@@ -136,10 +123,12 @@ const CaptainMainPage = () => {
 
           <div className='pointer-events-auto bg-white relative z-[2000] w-full md:w-[75%] md:mx-auto md:rounded-t-2xl md:shadow-xl'>
             {activeRide ? (
+              // Active ride replaces earnings panel
               <div className='min-h-[220px]'>
                 <ActiveRide ride={activeRide} onRideEnded={handleRideEnded} />
               </div>
             ) : (
+              // Today's real earnings + show ride requests
               <div className='px-8 py-4 h-[30%] bg-white flex gap-8 relative z-[2000] w-full md:rounded-t-2xl'>
                 <div className='flex-[1.5]'>
                   <h3 className='text-gray-700 font-semibold text-base mb-3'>Today's Earnings</h3>
