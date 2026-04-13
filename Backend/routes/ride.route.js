@@ -13,6 +13,7 @@ router.post('/cancel',                              rideController.cancelRide);
 router.post('/update-location',                     rideController.updateCaptainLocation);
 
 // History & stats
+router.get('/user-active/:userId',                  rideController.getUserActiveRide);
 router.get('/user-history/:userId',                 rideController.getUserRideHistory);
 router.get('/captain-history/:captainId',           rideController.getCaptainRideHistory);
 router.get('/captain-today-stats/:captainId',       rideController.getCaptainTodayStats);
