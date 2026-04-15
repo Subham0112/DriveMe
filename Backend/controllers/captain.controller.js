@@ -50,8 +50,8 @@ const loginCaptain = async (req, res, next) => {
   const token = captain.generateAuthToken();
   res.cookie('token', token, {
     httpOnly: true,
-    secure: false,
-    sameSite: 'lax',
+    secure: true,
+    sameSite: 'none',
   });
   res.status(200).json({ captain, token });
   console.log("captain logged in");
