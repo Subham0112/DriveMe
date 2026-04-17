@@ -30,9 +30,9 @@ const blacklistToken = require('../models/tokenBacklist.model');
   }
 
   const authCaptain= async (req, res, next) => {
-    const token=req.cookies?.token || req.headers.authorization?.split(" ")[1];
+    const token=req.cookies?.CaptainToken || req.headers.authorization?.split(" ")[1];
     if(!token){
-      return res.status(401).json({message:"Unauthorized "});
+      return res.status(401).json({message:"Unauthorized captain"});
     }
 
     const isBlacklisted=await blacklistToken.findOne({token:token});

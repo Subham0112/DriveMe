@@ -48,7 +48,7 @@ const loginCaptain = async (req, res, next) => {
   }
 
   const token = captain.generateAuthToken();
-  res.cookie('token', token, {
+  res.cookie('CaptainToken', token, {
     httpOnly: true,
     secure: true,
     sameSite: 'none',
@@ -206,7 +206,7 @@ const logoutCaptain = async (req, res) => {
     }
 
     const token =
-      req.cookies?.token ||
+      req.cookies?.CaptainToken ||
       req.headers.authorization?.split(' ')[1];
 
     if (token) {
@@ -217,7 +217,7 @@ const logoutCaptain = async (req, res) => {
       );
     }
 
-    res.clearCookie('token');
+    res.clearCookie('CaptainToken');
     return res.status(200).json({ message: 'Captain logged out successfully' });
   } catch (err) {
     console.error('Logout error:', err);

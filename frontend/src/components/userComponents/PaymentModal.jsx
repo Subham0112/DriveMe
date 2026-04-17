@@ -36,44 +36,44 @@ const PaymentModal = ({ ride, onClose, onRideCompleted }) => {
   }
 
 
-  const handleEsewa = async () => {
-    setLoading(true)
-    try {
-      const res = await fetch(`${API_BASE}/rides/esewa-init`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ rideId: ride._id, amount: ride.fare }),
-      })
-      const data = await res.json()
-      if (!data.success) {
-        alert(data.message || 'Could not initiate eSewa payment')
-        setLoading(false)
-        return
-      }
+  // const handleEsewa = async () => {
+  //   setLoading(true)
+  //   try {
+  //     const res = await fetch(`${API_BASE}/rides/esewa-init`, {
+  //       method: 'POST',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       credentials: 'include',
+  //       body: JSON.stringify({ rideId: ride._id, amount: ride.fare }),
+  //     })
+  //     const data = await res.json()
+  //     if (!data.success) {
+  //       alert(data.message || 'Could not initiate eSewa payment')
+  //       setLoading(false)
+  //       return
+  //     }
 
-      // Build and auto-submit a hidden form to eSewa sandbox
-      const form = document.createElement('form')
-      form.method = 'POST'
-      form.action = 'https://rc-epay.esewa.com.np/api/epay/main/v2/form'
+  //     // Build and auto-submit a hidden form to eSewa sandbox
+  //     const form = document.createElement('form')
+  //     form.method = 'POST'
+  //     form.action = 'https://rc-epay.esewa.com.np/api/epay/main/v2/form'
 
-      Object.entries(data.formData).forEach(([key, value]) => {
-        const input = document.createElement('input')
-        input.type = 'hidden'
-        input.name = key
-        input.value = value
-        form.appendChild(input)
-      })
+  //     Object.entries(data.formData).forEach(([key, value]) => {
+  //       const input = document.createElement('input')
+  //       input.type = 'hidden'
+  //       input.name = key
+  //       input.value = value
+  //       form.appendChild(input)
+  //     })
 
-      document.body.appendChild(form)
-      form.submit()
-      // Browser navigates away — PaymentSuccess page handles the result
-    } catch (err) {
-      console.error(err)
-      alert('Network error. Please try again.')
-      setLoading(false)
-    }
-  }
+  //     document.body.appendChild(form)
+  //     form.submit()
+  //     // Browser navigates away — PaymentSuccess page handles the result
+  //   } catch (err) {
+  //     console.error(err)
+  //     alert('Network error. Please try again.')
+  //     setLoading(false)
+  //   }
+  // }
 
   return (
     <div style={{
@@ -119,7 +119,7 @@ const PaymentModal = ({ ride, onClose, onRideCompleted }) => {
               </button>
 
               {/* eSewa option */}
-              <button
+              {/* <button
                 onClick={handleEsewa}
                 disabled={loading}
                 className='w-full flex items-center gap-4 p-4 border-2 border-gray-200 rounded-2xl hover:border-green-600 hover:bg-green-50 transition-all group'
@@ -134,12 +134,12 @@ const PaymentModal = ({ ride, onClose, onRideCompleted }) => {
                 <div className='ml-auto'>
                   <div className='w-5 h-5 rounded-full border-2 border-gray-300 group-hover:border-green-600'></div>
                 </div>
-              </button>
+              </button> */}
             </div>
 
-            <p className='text-xs text-gray-400 text-center mt-4'>
+            {/* <p className='text-xs text-gray-400 text-center mt-4'>
               eSewa sandbox — use test ID 9806800001 / Nepal@123
-            </p>
+            </p> */}
           </>
         )}
 

@@ -35,8 +35,8 @@ const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/captains/log
     title: 'Error',
     description: error.response?.data?.message || 'Login failed!'
   });
+  console.log("Login Failed");
 }
-      console.log("Login Failed");
     
   };
 

@@ -25,6 +25,7 @@ function UserLogin({handleAlert}) {
       if (response.status === 200) {
         setUser(response.data.user);
         navigate('/main');
+        conosle.log("Login Successful");
       }
     } catch (error) {
       handleAlert({
@@ -32,8 +33,8 @@ function UserLogin({handleAlert}) {
         title: 'Error',
         description: error.response?.data?.message || 'Login failed!'
       });
-    }
       console.log("Login Failed");
+    }
     
   };
 
