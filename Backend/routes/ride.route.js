@@ -22,8 +22,8 @@ router.get('/captain-all-stats/:captainId',         rideController.getCaptainAll
 // Payment
 router.post('/mark-cash',                           rideController.markCashPayment);
 router.post('/complete-cash',                       rideController.completeRideCash);
-router.post('/esewa-init',                          rideController.initEsewaPayment);
-router.post('/esewa-verify',                        rideController.verifyEsewaPayment);
+// router.post('/esewa-init',                          rideController.initEsewaPayment);
+// router.post('/esewa-verify',                        rideController.verifyEsewaPayment);
 
 // ── Wildcard LAST — must never come before named routes ──────────
 router.get('/:rideId',                              rideController.getRide);

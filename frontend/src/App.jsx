@@ -52,12 +52,12 @@ const handleDismiss = () => setAlert(null);
             <UserProfile handleAlert={handleAlert}/>
           </UserProtectAuth>
         } />
-        <Route path="/payment/success" element={
+        {/* <Route path="/payment/success" element={
           <PaymentSuccess />
         } />
         <Route path="/payment/failure" element={
           <PaymentFailure />
-        } />
+        } /> */}
         <Route path="/user/logout" element={
           <UserProtectAuth>
             <LogoutPage />

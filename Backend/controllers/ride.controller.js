@@ -212,137 +212,135 @@ exports.completeRideCash = async (req, res) => {
 };
 
 // ─── PAYMENT: eSewa — Step 1: Generate signed form fields ─────────────────────
-// Frontend calls this to get the HMAC-signed payload to POST to eSewa sandbox.
-exports.initEsewaPayment = async (req, res) => {
-  try {
-    const { rideId, amount } = req.body;
-    if (!rideId || !amount) {
-      return res.status(400).json({ message: 'rideId and amount are required' });
-    }
+// exports.initEsewaPayment = async (req, res) => {
+//   try {
+//     const { rideId, amount } = req.body;
+//     if (!rideId || !amount) {
+//       return res.status(400).json({ message: 'rideId and amount are required' });
+//     }
 
-    // eSewa sandbox credentials — move to .env in production
-    const ESEWA_PRODUCT_CODE = process.env.ESEWA_PRODUCT_CODE || 'EPAYTEST';
-    const ESEWA_SECRET_KEY   = process.env.ESEWA_SECRET_KEY   || '8gBm/:&EnhH.1/q';
-    const FRONTEND_URL       = process.env.FRONTEND_URL        || 'http://localhost:5173';
+//     // eSewa sandbox credentials — move to .env in production
+//     const ESEWA_PRODUCT_CODE = process.env.ESEWA_PRODUCT_CODE || 'EPAYTEST';
+//     const ESEWA_SECRET_KEY   = process.env.ESEWA_SECRET_KEY   || '8gBm/:&EnhH.1/q';
+//     const FRONTEND_URL       = process.env.FRONTEND_URL        || 'http://localhost:5173';
 
-    // Encode rideId inside transaction_uuid so we can recover it on the success page
-    const transactionUuid = `RIDE-${rideId}-${Date.now()}`;
-    const totalAmount     = parseFloat(amount);
+//     // Encode rideId inside transaction_uuid so we can recover it on the success page
+//     const transactionUuid = `RIDE-${rideId}-${Date.now()}`;
+//     const totalAmount     = parseFloat(amount);
 
-    // eSewa requires the message in exactly this format
-    const message = `total_amount=${totalAmount},transaction_uuid=${transactionUuid},product_code=${ESEWA_PRODUCT_CODE}`;
-    const signature = crypto
-      .createHmac('sha256', ESEWA_SECRET_KEY)
-      .update(message)
-      .digest('base64');
+//     // eSewa requires the message in exactly this format
+//     const message = `total_amount=${totalAmount},transaction_uuid=${transactionUuid},product_code=${ESEWA_PRODUCT_CODE}`;
+//     const signature = crypto
+//       .createHmac('sha256', ESEWA_SECRET_KEY)
+//       .update(message)
+//       .digest('base64');
 
-    res.json({
-      success: true,
-      formData: {
-        amount:                  totalAmount,
-        tax_amount:              0,
-        total_amount:            totalAmount,
-        transaction_uuid:        transactionUuid,
-        product_code:            ESEWA_PRODUCT_CODE,
-        product_service_charge:  0,
-        product_delivery_charge: 0,
-        success_url:             `${FRONTEND_URL}/payment/success`,
-        failure_url:             `${FRONTEND_URL}/payment/failure`,
-        signed_field_names:      'total_amount,transaction_uuid,product_code',
-        signature,
-      },
-    });
-  } catch (error) {
-    console.error('initEsewaPayment error:', error);
-    res.status(500).json({ message: 'Could not initiate eSewa payment' });
-  }
-};
+//     res.json({
+//       success: true,
+//       formData: {
+//         amount:                  totalAmount,
+//         tax_amount:              0,
+//         total_amount:            totalAmount,
+//         transaction_uuid:        transactionUuid,
+//         product_code:            ESEWA_PRODUCT_CODE,
+//         product_service_charge:  0,
+//         product_delivery_charge: 0,
+//         success_url:             `${FRONTEND_URL}/payment/success`,
+//         failure_url:             `${FRONTEND_URL}/payment/failure`,
+//         signed_field_names:      'total_amount,transaction_uuid,product_code',
+//         signature,
+//       },
+//     });
+//   } catch (error) {
+//     console.error('initEsewaPayment error:', error);
+//     res.status(500).json({ message: 'Could not initiate eSewa payment' });
+//   }
+// };
+
 
 // ─── PAYMENT: eSewa — Step 2: Verify & complete ride ──────────────────────────
-// Called from PaymentSuccess page after eSewa redirects back.
-// Verifies HMAC signature then marks ride completed.
-exports.verifyEsewaPayment = async (req, res) => {
-  try {
-    const io = getIO();
-    const { encodedData, rideId } = req.body;
-    if (!encodedData || !rideId) {
-      return res.status(400).json({ message: 'encodedData and rideId are required' });
-    }
 
-    // 1. Decode base64 JSON sent by eSewa
-    let decoded;
-    try {
-      decoded = JSON.parse(Buffer.from(encodedData, 'base64').toString('utf-8'));
-    } catch {
-      return res.status(400).json({ message: 'Invalid payment data encoding' });
-    }
+// exports.verifyEsewaPayment = async (req, res) => {
+//   try {
+//     const io = getIO();
+//     const { encodedData, rideId } = req.body;
+//     if (!encodedData || !rideId) {
+//       return res.status(400).json({ message: 'encodedData and rideId are required' });
+//     }
 
-    const { status, signed_field_names, signature } = decoded;
+//     // 1. Decode base64 JSON sent by eSewa
+//     let decoded;
+//     try {
+//       decoded = JSON.parse(Buffer.from(encodedData, 'base64').toString('utf-8'));
+//     } catch {
+//       return res.status(400).json({ message: 'Invalid payment data encoding' });
+//     }
 
-    // 2. Verify HMAC signature
-    const ESEWA_PRODUCT_CODE = process.env.ESEWA_PRODUCT_CODE || 'EPAYTEST';
-    const ESEWA_SECRET_KEY   = process.env.ESEWA_SECRET_KEY   || '8gBm/:&EnhH.1/q';
+//     const { status, signed_field_names, signature } = decoded;
 
-    const message = signed_field_names
-      .split(',')
-      .map((field) => `${field}=${decoded[field]}`)
-      .join(',');
+//     // 2. Verify HMAC signature
+//     const ESEWA_PRODUCT_CODE = process.env.ESEWA_PRODUCT_CODE || 'EPAYTEST';
+//     const ESEWA_SECRET_KEY   = process.env.ESEWA_SECRET_KEY   || '8gBm/:&EnhH.1/q';
 
-    const expectedSig = crypto
-      .createHmac('sha256', ESEWA_SECRET_KEY)
-      .update(message)
-      .digest('base64');
+//     const message = signed_field_names
+//       .split(',')
+//       .map((field) => `${field}=${decoded[field]}`)
+//       .join(',');
 
-    if (expectedSig !== signature) {
-      return res.status(400).json({ success: false, message: 'Signature mismatch — payment tampered' });
-    }
+//     const expectedSig = crypto
+//       .createHmac('sha256', ESEWA_SECRET_KEY)
+//       .update(message)
+//       .digest('base64');
 
-    // 3. Check eSewa status
-    if (status !== 'COMPLETE') {
-      return res.status(400).json({ success: false, message: `Payment status is ${status}` });
-    }
+//     if (expectedSig !== signature) {
+//       return res.status(400).json({ success: false, message: 'Signature mismatch — payment tampered' });
+//     }
 
-    // 4. Complete the ride
-    const ride = await Ride.findById(rideId);
-    if (!ride) return res.status(404).json({ message: 'Ride not found' });
+//     // 3. Check eSewa status
+//     if (status !== 'COMPLETE') {
+//       return res.status(400).json({ success: false, message: `Payment status is ${status}` });
+//     }
 
-    ride.rideStatus   = 'completed';
-    ride.paymentStatus = 'paid';
-    await ride.save();
+//     // 4. Complete the ride
+//     const ride = await Ride.findById(rideId);
+//     if (!ride) return res.status(404).json({ message: 'Ride not found' });
 
-    if (ride.captain) {
-      await Captain.findByIdAndUpdate(ride.captain, { $inc: { totalRidesCompleted: 1 } });
-    }
+//     ride.rideStatus   = 'completed';
+//     ride.paymentStatus = 'paid';
+//     await ride.save();
 
-    // Notify both user and captain
-    io.emit('ride-completed', { rideId: ride._id });
-    res.json({ success: true, message: 'eSewa payment verified. Ride completed.', ride });
-  } catch (error) {
-    console.error('verifyEsewaPayment error:', error);
-    res.status(500).json({ message: 'Payment verification failed' });
-  }
-};
+//     if (ride.captain) {
+//       await Captain.findByIdAndUpdate(ride.captain, { $inc: { totalRidesCompleted: 1 } });
+//     }
+
+//     // Notify both user and captain
+//     io.emit('ride-completed', { rideId: ride._id });
+//     res.json({ success: true, message: 'eSewa payment verified. Ride completed.', ride });
+//   } catch (error) {
+//     console.error('verifyEsewaPayment error:', error);
+//     res.status(500).json({ message: 'Payment verification failed' });
+//   }
+// };
 
 // ─── Active ride restore: find user's current accepted/ongoing ride ─────────────
-// Called on UserMainPage mount to restore ride state after navigation (e.g.
-// returning from /payment/failure). Prevents the panel disappearing mid-ride.
-exports.getUserActiveRide = async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const ride = await Ride.findOne({
-      user: userId,
-      rideStatus: { $in: ['accepted', 'ongoing'] },
-    })
-      .populate('captain', 'fullname vehicle socketId')
-      .sort({ createdAt: -1 });
 
-    if (!ride) return res.json({ success: false });
-    res.json({ success: true, ride });
-  } catch (error) {
-    console.error('getUserActiveRide error:', error);
-    res.status(500).json({ message: 'Error fetching active ride' });
-  }
-};
+// exports.getUserActiveRide = async (req, res) => {
+//   try {
+//     const { userId } = req.params;
+//     const ride = await Ride.findOne({
+//       user: userId,
+//       rideStatus: { $in: ['accepted', 'ongoing'] },
+//     })
+//       .populate('captain', 'fullname vehicle socketId')
+//       .sort({ createdAt: -1 });
+
+//     if (!ride) return res.json({ success: false });
+//     res.json({ success: true, ride });
+//   } catch (error) {
+//     console.error('getUserActiveRide error:', error);
+//     res.status(500).json({ message: 'Error fetching active ride' });
+//   }
+// };
 
 // ─── HISTORY: User ride history ────────────────────────────────────────────────
 exports.getUserRideHistory = async (req, res) => {

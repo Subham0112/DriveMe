@@ -33,7 +33,6 @@ function UserLogin({handleAlert}) {
         title: 'Error',
         description: error.response?.data?.message || 'Login failed!'
       });
-      console.log("Login Failed");
     }
     
   };
