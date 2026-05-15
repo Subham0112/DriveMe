@@ -231,29 +231,9 @@ VITE_API_URL=http://localhost:3000
 
 ---
 
-##  Configuration
+##  Configuration.
 
-### Backend Environment Variables (.env)
-```env
-PORT=3000
-MONGODB_URI=mongodb://localhost:27017/driveme
-# OR for MongoDB Atlas:
-# MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/driveme
 
-JWT_SECRET=your_super_secret_jwt_key_change_this
-JWT_EXPIRE=7d
-
-# Add payment gateway keys, email configs, etc.
-```
-
-### Frontend Environment Variables (.env)
-```env
-VITE_API_URL=http://localhost:3000
-VITE_SOCKET_URL=http://localhost:3000
-# Add any other API endpoints or keys
-```
-
----
 
 ##  Running the Project
 
@@ -291,12 +271,6 @@ npm run build
 cd Backend
 npm start
 ```
-
----
-
-##  API Documentation
-
-### Authentication Endpoints
 
 #### User Signup
 ```
@@ -459,43 +433,5 @@ npm test
 - Ensure frontend and backend are on correct URLs/ports
 - Check browser console for connection errors
 
-### Port Already in Use
-```bash
-# On Windows
-netstat -ano | findstr :3000
-taskkill /PID <PID> /F
-
-# On Mac/Linux
-lsof -ti:3000 | xargs kill -9
-```
-
----
-
-## 📚 Additional Resources
-
-- [Express.js Documentation](https://expressjs.com/)
-- [React Documentation](https://react.dev/)
-- [MongoDB Documentation](https://docs.mongodb.com/)
-- [Socket.io Documentation](https://socket.io/docs/)
-- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
-- [Vite Documentation](https://vitejs.dev/)
-
----
-
-## 👨‍💻 Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 👤 Author
-
-**Your Name / Team**
-- GitHub: [@yourusername](https://github.com/yourusername)
-- Email: your.email@example.com
 
 
