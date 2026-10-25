@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import driveMeLogo from '../assets/img/DriveMe-Logo.png'
+import DriveMeLogo from '../assets/img/DriveMe-Logo.png'
 import { UserDataContext } from '../context/UserContext.jsx';
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import axios from 'axios';
@@ -10,7 +10,7 @@ function UserLogin({handleAlert}) {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const navigate=useNavigate();
-  const {user, setUser}=useContext(UserDataContext);
+  const {user, setUser} = useContext(UserDataContext);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,7 +25,7 @@ function UserLogin({handleAlert}) {
       if (response.status === 200) {
         setUser(response.data.user);
         navigate('/main');
-        conosle.log("Login Successful");
+        console.log("Login Successful");
       }
     } catch (error) {
       handleAlert({
