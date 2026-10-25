@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import DriveMeLogo from '../assets/img/DriveMe-Logo.png'
+import DriveMeLogo from '../assets/img/DriveMe-logo.png'
 import { UserDataContext } from '../context/UserContext.jsx';
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import axios from 'axios';
