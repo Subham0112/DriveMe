@@ -324,23 +324,23 @@ exports.completeRideCash = async (req, res) => {
 
 // ─── Active ride restore: find user's current accepted/ongoing ride ─────────────
 
-// exports.getUserActiveRide = async (req, res) => {
-//   try {
-//     const { userId } = req.params;
-//     const ride = await Ride.findOne({
-//       user: userId,
-//       rideStatus: { $in: ['accepted', 'ongoing'] },
-//     })
-//       .populate('captain', 'fullname vehicle socketId')
-//       .sort({ createdAt: -1 });
+exports.getUserActiveRide = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const ride = await Ride.findOne({
+      user: userId,
+      rideStatus: { $in: ['accepted', 'ongoing'] },
+    })
+      .populate('captain', 'fullname vehicle socketId')
+      .sort({ createdAt: -1 });
 
-//     if (!ride) return res.json({ success: false });
-//     res.json({ success: true, ride });
-//   } catch (error) {
-//     console.error('getUserActiveRide error:', error);
-//     res.status(500).json({ message: 'Error fetching active ride' });
-//   }
-// };
+    if (!ride) return res.json({ success: false });
+    res.json({ success: true, ride });
+  } catch (error) {
+    console.error('getUserActiveRide error:', error);
+    res.status(500).json({ message: 'Error fetching active ride' });
+  }
+};
 
 // ─── HISTORY: User ride history ────────────────────────────────────────────────
 exports.getUserRideHistory = async (req, res) => {
