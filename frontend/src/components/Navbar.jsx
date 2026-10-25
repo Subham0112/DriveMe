@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { IoMdHome, IoMdTime, IoMdPerson, IoMdLogOut } from 'react-icons/io';
-import DriveMeLogo from '../assets/img/DriveMe-Logo.png';
+import DriveMeLogo from '../assets/img/DriveMe-logo.png';
 
 const Navbar = ({ userType = 'user' }) => {
   const location = useLocation();

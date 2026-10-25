@@ -2,7 +2,7 @@ import React from 'react'
 import { useState, useRef, useContext, useEffect } from 'react'
 import gsap from 'gsap'
 import { IoIosArrowDown, IoIosPin } from "react-icons/io"
-import DriveMeLogo from '../assets/img/DriveMe-Logo.png'
+import DriveMeLogo from '../assets/img/DriveMe-logo.png'
 import ShowRaiders from '../components/userComponents/ShowRaiders'
 import UserMap from '../components/userComponents/UserMaps'
 import LocationSearchPanel from '../components/userComponents/LocationSearchPanel'

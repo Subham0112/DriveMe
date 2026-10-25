@@ -1,7 +1,7 @@
 import React, { useRef, useState, useContext, useEffect } from 'react'
 import Navbar from '../components/Navbar'
 import CaptainMap from '../components/captainComponents/CaptainMap'
-import DriveMeLogo from '../assets/img/DriveMe-Logo.png'
+import DriveMeLogo from '../assets/img/DriveMe-logo.png'
 import { IoIosArrowDown } from "react-icons/io"
 import RideRequest from '../components/captainComponents/RideRequest'
 import ActiveRide from '../components/captainComponents/ActiveRide'
